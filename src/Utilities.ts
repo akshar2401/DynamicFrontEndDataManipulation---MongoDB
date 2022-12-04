@@ -27,6 +27,14 @@ export class Utilities {
     return !Utilities.isEmptyString(s);
   }
 
+  static isValidIndex(index: number, upperBound: number) {
+    return index >= 0 && index < upperBound;
+  }
+
+  static notIn<T>(object: T, ...candidates: T[]) {
+    return !candidates.includes(object);
+  }
+
   static modifyGrammarToRecognizeSpaces(rule: string) {
     const tokens = rule.split(String.Space).filter((str) => !!str);
     return tokens.join(

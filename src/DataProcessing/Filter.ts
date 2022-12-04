@@ -58,8 +58,8 @@ export default class FilterQueryParser implements IFilterQueryParser {
         {
             Object.getOwnPropertyNames(options).forEach(name => {
               this[name] = options[name];
-            }) 
-
+            })
+            
             const {
                 NullFilterNode,
                 FloatLiteralNode,
@@ -69,18 +69,24 @@ export default class FilterQueryParser implements IFilterQueryParser {
                 BinaryLogicalOperationNode,
                 ListSeparatorNode,
                 ListNode,
+                ConditionNode,
+                StringLiteralNode,
+                NotLogicalOperationNode,
+                ObjectNode,
+                KeyValuePairNode,
+                ObjectSeparatorNode,
                 createBinaryLogicalOperationNode,
                 createBoolNode,
-                ConditionNode,
                 createNumberNode,
                 createIdentifierNode,
-                StringLiteralNode,
                 createStringNode,
                 createConditionNode,
                 createUnaryOperationNode,
                 createListSeparatorNode,
                 createListNode,
-                NotLogicalOperationNode,
+                createObjectNode,
+                createKeyValuePairNode,
+                createObjectSeparatorNode,
                 handleInParenthesis
             } = options;
         }
@@ -125,13 +131,33 @@ export default class FilterQueryParser implements IFilterQueryParser {
             / number
             / string
             / identifier
-            / ${Utilities.modifyGrammarToRecognizeSpaces(
-              '"[" "]"'
-            )} {return createListNode()}
-            / ${Utilities.modifyGrammarToRecognizeSpaces(
-              '"[" list:terminalList "]"'
-            )}  {return createListNode(list) }
+            / terminalListLiteral
+            / terminalObjectLiteral
+        terminalObjectLiteral "terminalObjectLiteral"
+           = ${Utilities.modifyGrammarToRecognizeSpaces(
+             '"{" "}"'
+           )} {return createObjectNode(); }
+           / ${Utilities.modifyGrammarToRecognizeSpaces(
+             '"{" object:terminalObject "}"'
+           )} {return createObjectNode(object);}
+        terminalObject "terminalObject"
+            = ${Utilities.modifyGrammarToRecognizeSpaces(
+              'lhs:terimalObjectKeyValuePair sep:"," rhs:terminalObject'
+            )} {return createObjectSeparatorNode(lhs, sep, rhs)}
+            / terimalObjectKeyValuePair
 
+        terimalObjectKeyValuePair "terimalObjectKeyValuePair"
+          = ${Utilities.modifyGrammarToRecognizeSpaces(
+            'key:(identifier/string) sep:":" value:terminal'
+          )} {return createKeyValuePairNode(key, sep, value); }
+
+        terminalListLiteral "terminalListLiteral"
+          = ${Utilities.modifyGrammarToRecognizeSpaces(
+            '"[" "]"'
+          )} {return createListNode()}
+          / ${Utilities.modifyGrammarToRecognizeSpaces(
+            '"[" list:terminalList "]"'
+          )}  {return createListNode(list) }
         terminalList "terminalList"
           = ${Utilities.modifyGrammarToRecognizeSpaces(
             'lhs:terminal sep:"," rhs:terminalList'
@@ -146,7 +172,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
         string "string"
         = stringLiteral:('"' [^"]* '"') {return createStringNode(stringLiteral)}
         identifier "identifer"
-        = identifier: ([^ 0-9->=()!<&|,"\\[\\]][^ ->=!<()&|,"\\[\\]]*) {return createIdentifierNode(identifier)}
+        = identifier: ([^ 0-9->=(){}!<&|:,"\\[\\]] ([^ ->=!<()&|:{},"\\[\\]]*)) {return createIdentifierNode(identifier)}
         `;
     return grammar;
   }

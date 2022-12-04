@@ -13,6 +13,11 @@ import {
   NullFilterNode,
   StringLiteralNode,
   UnaryOperationNode,
+  KeyValuePairNode,
+  ObjectNode,
+  ObjectSeparatorNode,
+  ISeparatorNode,
+  SeparatedChildrenNode,
 } from "./FilterNode";
 
 export interface IFilterNodeVisitor<ReturnType> {
@@ -30,21 +35,49 @@ export interface IFilterNodeVisitor<ReturnType> {
   visitNotOperationNode(filterNode: NotLogicalOperationNode): ReturnType;
   visitListNode(filterNode: ListNode): ReturnType;
   visitListSeparatorNode(filterNode: ListSeparatorNode): ReturnType;
+  visitKeyValuePairNode(filterNode: KeyValuePairNode): ReturnType;
+  visitObjectNode(filterNode: ObjectNode): ReturnType;
+  visitObjectSeparatorNode(filterNode: ObjectSeparatorNode): ReturnType;
 }
 
 export interface IVisitorComptabileFilterNode<ReturnType> {
   accept(visitor: IFilterNodeVisitor<ReturnType>): ReturnType;
 }
 
+export type PrintFilterTreeVisitorOptions = {
+  printOutput?: boolean;
+  defaultListSeparator?: (node?: ListNode) => string;
+  defaultObjectSeparator?: (node?: ObjectNode) => string;
+  getSpacesAroundSeparator?(node?: SeparatedChildrenNode<any>): {
+    before: string;
+    after: string;
+  };
+};
 export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
-  constructor(
-    private printOutput = false,
-    private defaultListSeparator = String.Punctuations.Comma
-  ) {}
+  private static defaultOptions: PrintFilterTreeVisitorOptions = {
+    printOutput: false,
+    defaultListSeparator(node?) {
+      return String.Punctuations.Comma;
+    },
+    defaultObjectSeparator(node?) {
+      return String.Punctuations.Comma;
+    },
+    getSpacesAroundSeparator(node?) {
+      return { before: String.Empty, after: String.Space };
+    },
+  };
+
+  constructor(private options: PrintFilterTreeVisitorOptions = {}) {
+    this.options = Object.assign(
+      {},
+      PrintFilterTreeVisitor.defaultOptions,
+      options
+    );
+  }
 
   visit(filterNode: FilterNode<any>) {
     const output = filterNode.accept(this);
-    if (this.printOutput) console.log(output);
+    if (this.options.printOutput) console.log(output);
     return output;
   }
 
@@ -104,7 +137,7 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
   }
 
   visitListNode(filterNode: ListNode): string {
-    let listNodeStringRepresentation = [String.Brackets.Opening.Square];
+    const listNodeStringRepresentation = [String.Brackets.Opening.Square];
     for (
       let childIndex = 0;
       childIndex < filterNode.childrenCount;
@@ -115,10 +148,13 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
       if (childIndex > 0) {
         const separator =
           childIndex - 1 < 0
-            ? this.defaultListSeparator
-            : filterNode.listSeparatorNodeAt(childIndex - 1)?.data ??
-              this.defaultListSeparator;
+            ? this.options.defaultListSeparator(filterNode)
+            : filterNode.separatorAt(childIndex - 1)?.separator ??
+              this.options.defaultListSeparator(filterNode);
+        const spaces = this.options.getSpacesAroundSeparator(filterNode);
+        listNodeStringRepresentation.push(spaces.before);
         listNodeStringRepresentation.push(separator);
+        listNodeStringRepresentation.push(spaces.after);
       }
 
       listNodeStringRepresentation.push(childStringRepresentation);
@@ -131,13 +167,70 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
     );
   }
 
-  visitListSeparatorNode(filterNode: ListSeparatorNode): string {
-    const lhs = filterNode.left?.accept(this) ?? String.Empty;
-    const rhs = filterNode.right?.accept(this) ?? String.Empty;
+  private visitSeparatorNode(
+    filterNode: ISeparatorNode & FilterNode<any>,
+    spaceOnLeft = false,
+    spaceOnRight = true
+  ) {
+    const childrenStringRepresentation: string[] = [];
+    for (const child of filterNode.children) {
+      const childStringRepresentation = child?.accept(this) ?? String.Empty;
+      childrenStringRepresentation.push(childStringRepresentation);
+    }
+
     return this.wrap(
       filterNode,
-      String.join(lhs, String.Space, filterNode.data, String.Space, rhs)
+      childrenStringRepresentation.join(
+        String.join(
+          spaceOnLeft ? String.Space : String.Empty,
+          filterNode.separator,
+          spaceOnRight ? String.Space : String.Empty
+        )
+      )
     );
+  }
+
+  visitListSeparatorNode(filterNode: ListSeparatorNode): string {
+    return this.visitSeparatorNode(filterNode);
+  }
+
+  visitKeyValuePairNode(filterNode: KeyValuePairNode) {
+    return this.visitSeparatorNode(filterNode);
+  }
+
+  visitObjectNode(filterNode: ObjectNode) {
+    const objectNodeStringRepresentation = [String.Brackets.Opening.Curly];
+    for (
+      let keyValueIndex = 0;
+      keyValueIndex < filterNode.data;
+      keyValueIndex++
+    ) {
+      const keyValueStringRepresentation =
+        filterNode.childAt(keyValueIndex)?.accept(this) ?? String.Empty;
+      if (keyValueIndex > 0) {
+        const separator =
+          keyValueIndex - 1 < 0
+            ? this.options.defaultObjectSeparator(filterNode)
+            : filterNode.separatorAt(keyValueIndex - 1).separator ??
+              this.options.defaultObjectSeparator(filterNode);
+        const spaces = this.options.getSpacesAroundSeparator(filterNode);
+        objectNodeStringRepresentation.push(spaces.before);
+        objectNodeStringRepresentation.push(separator);
+        objectNodeStringRepresentation.push(spaces.after);
+      }
+
+      objectNodeStringRepresentation.push(keyValueStringRepresentation);
+    }
+
+    objectNodeStringRepresentation.push(String.Brackets.Closing.Curly);
+
+    return this.wrap(
+      filterNode,
+      objectNodeStringRepresentation.join(String.Empty)
+    );
+  }
+  visitObjectSeparatorNode(filterNode: ObjectSeparatorNode) {
+    return this.visitSeparatorNode(filterNode);
   }
 
   private wrap(filterNode: FilterNode<any>, expr: string) {

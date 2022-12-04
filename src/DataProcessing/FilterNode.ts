@@ -17,6 +17,9 @@ export enum FilterNodeType {
   NotLogicalOperation = "not",
   ListSeparator = "list_separator",
   List = "list",
+  KeyValuePair = "key_value_pair",
+  Object = "object",
+  ObjectSeparator = "object_separator",
 }
 
 export enum BinaryLogicalOperators {
@@ -247,7 +250,7 @@ export abstract class BinaryOperatorNode<TData> extends BinaryFilterNode<
 export class ConditionNode extends BinaryOperatorNode<any> {
   public override type = FilterNodeType.Condition;
 
-  constructor(operator: string, lhs?: FilterNode<any>, rhs?: FilterNode<any>) {
+  constructor(operator: string, lhs: FilterNode<any>, rhs: FilterNode<any>) {
     super(operator, operator, undefined, lhs, rhs);
   }
 
@@ -261,8 +264,8 @@ export class BinaryLogicalOperationNode extends BinaryOperatorNode<any> {
 
   constructor(
     operator: BinaryLogicalOperators,
-    lhs?: FilterNode<any>,
-    rhs?: FilterNode<any>,
+    lhs: FilterNode<any>,
+    rhs: FilterNode<any>,
     rawOperatorToken?: string
   ) {
     super(operator, rawOperatorToken, undefined, lhs, rhs);
@@ -273,12 +276,23 @@ export class BinaryLogicalOperationNode extends BinaryOperatorNode<any> {
   }
 }
 
-export class ListSeparatorNode extends BinaryFilterNode<string> {
+export interface ISeparatorNode {
+  get separator(): string;
+}
+
+export class ListSeparatorNode
+  extends BinaryFilterNode<string>
+  implements ISeparatorNode
+{
   public override type = FilterNodeType.ListSeparator;
   public data: string;
-  constructor(sep: string, lhs?: FilterNode<any>, rhs?: FilterNode<any>) {
+  constructor(sep: string, lhs: FilterNode<any>, rhs: FilterNode<any>) {
     super(lhs, rhs);
     this.data = sep;
+  }
+
+  public get separator() {
+    return this.data;
   }
 
   public accept(visitor: IFilterNodeVisitor<any>) {
@@ -286,7 +300,21 @@ export class ListSeparatorNode extends BinaryFilterNode<string> {
   }
 }
 
-export class ListNode extends FilterNode<number> {
+export abstract class SeparatedChildrenNode<TData> extends FilterNode<TData> {
+  protected separators: ISeparatorNode[] = [];
+
+  public addSeparator(node: ISeparatorNode) {
+    this.separators.push(node);
+  }
+
+  public separatorAt(index: number) {
+    return Utilities.isValidIndex(index, this.separators.length)
+      ? this.separators[index]
+      : undefined;
+  }
+}
+
+export class ListNode extends SeparatedChildrenNode<number> {
   public type = FilterNodeType.List;
   /**
    * Returns the length of the array
@@ -295,19 +323,75 @@ export class ListNode extends FilterNode<number> {
     return this._children.length;
   }
 
-  private listSeparator: ListSeparatorNode[] = [];
-
-  public addListSeparatorNode(node: ListSeparatorNode) {
-    this.listSeparator.push(node);
-  }
-
-  public listSeparatorNodeAt(index: number) {
-    return index < this.listSeparator.length
-      ? this.listSeparator[index]
-      : undefined;
-  }
   public accept(visitor: IFilterNodeVisitor<any>) {
     return visitor.visitListNode(this);
+  }
+}
+
+export class KeyValuePairNode
+  extends BinaryFilterNode<string>
+  implements ISeparatorNode
+{
+  public override type = FilterNodeType.KeyValuePair;
+  public data: string;
+  constructor(
+    keyValueSeparator: string,
+    keyNode: FilterNode<any>,
+    valueNode: FilterNode<any>
+  ) {
+    super(keyNode, valueNode);
+    this.data = keyValueSeparator;
+  }
+
+  public get separator(): string {
+    return this.data;
+  }
+
+  public get keyNode() {
+    return this.left;
+  }
+
+  public get valueNode() {
+    return this.right;
+  }
+
+  public accept(visitor: IFilterNodeVisitor<any>) {
+    return visitor.visitKeyValuePairNode(this);
+  }
+}
+
+export class ObjectSeparatorNode
+  extends BinaryFilterNode<string>
+  implements ISeparatorNode
+{
+  public override type = FilterNodeType.ObjectSeparator;
+  public data: string;
+
+  constructor(separator: string, lhs: FilterNode<any>, rhs: FilterNode<any>) {
+    super(lhs, rhs);
+    this.data = separator;
+  }
+
+  public get separator() {
+    return this.data;
+  }
+
+  public accept(visitor: IFilterNodeVisitor<any>) {
+    return visitor.visitObjectSeparatorNode(this);
+  }
+}
+
+export class ObjectNode extends SeparatedChildrenNode<number> {
+  public type = FilterNodeType.Object;
+  /**
+   * Length of the object literal aka the number of key value pairs in it
+   */
+  public get data() {
+    return this._children.length;
+  }
+
+  public accept(visitor: IFilterNodeVisitor<any>) {
+    return visitor.visitObjectNode(this);
   }
 }
 
@@ -360,6 +444,7 @@ export class NodeCreators {
     if (Utilities.isNullOrUndefined(isFloat)) {
       isFloat = token.includes(".");
     }
+    console.log(tokens);
     if (isFloat) {
       return new FloatLiteralNode(token);
     } else {
@@ -387,7 +472,8 @@ export class NodeCreators {
     ) {
       return new NullFilterNode();
     }
-
+    console.log(token);
+    console.log(tokens);
     return new IdentifierNode(token);
   }
 
@@ -396,6 +482,11 @@ export class NodeCreators {
     operator: string,
     rhs: FilterNode<any>
   ) {
+    Errors.throwIfEitherLeftHandSideOrRightHandSideInvalid(
+      lhs,
+      rhs,
+      "Condition Node"
+    );
     return new ConditionNode(operator, lhs, rhs);
   }
 
@@ -404,8 +495,19 @@ export class NodeCreators {
     operator: string,
     rhs: FilterNode<any>
   ) {
+    const binaryLogicalOperator = symbolsToOperators[operator];
+    Errors.throwIfInvalid(
+      Utilities.isNullOrUndefined,
+      binaryLogicalOperator,
+      String.join("Binary Logical Operator ", operator)
+    );
+    Errors.throwIfEitherLeftHandSideOrRightHandSideInvalid(
+      lhs,
+      rhs,
+      "Binary Logical Operator Node"
+    );
     return new BinaryLogicalOperationNode(
-      symbolsToOperators[operator],
+      binaryLogicalOperator,
       lhs,
       rhs,
       operator
@@ -414,6 +516,15 @@ export class NodeCreators {
 
   static createUnaryOperationNode(operator: string, lhs: FilterNode<any>) {
     const unaryOp: UnaryLogicalOperators = symbolsToOperators[operator];
+    Errors.throwIfInvalid(
+      Utilities.isNullOrUndefined,
+      unaryOp,
+      String.join("Unary Operator ", operator)
+    );
+    Errors.throwIfNullOrUndefined(
+      lhs,
+      String.join("Right Hand Side of ", operator)
+    );
     switch (unaryOp) {
       case UnaryLogicalOperators.NOT:
         return new NotLogicalOperationNode(operator, lhs);
@@ -427,6 +538,11 @@ export class NodeCreators {
     sep: string,
     rhs: FilterNode<any>
   ) {
+    Errors.throwIfEitherLeftHandSideOrRightHandSideInvalid(
+      lhs,
+      rhs,
+      "List Separator Node"
+    );
     return new ListSeparatorNode(sep, lhs, rhs);
   }
 
@@ -454,9 +570,75 @@ export class NodeCreators {
     }
 
     const listSeparatorNode = startNode as ListSeparatorNode;
-    listNode.addListSeparatorNode(listSeparatorNode);
+    listNode.addSeparator(listSeparatorNode);
     this.buildListNodeChildren(listSeparatorNode.left, listNode);
     this.buildListNodeChildren(listSeparatorNode.right, listNode);
+  }
+
+  static createKeyValuePairNode(
+    keyNode: FilterNode<any>,
+    separator: string,
+    valueNode: FilterNode<any>
+  ) {
+    Errors.throwIfEitherLeftHandSideOrRightHandSideInvalid(
+      keyNode,
+      valueNode,
+      "Key Value Pair Node",
+      "Key Node",
+      "Value Node"
+    );
+
+    return new KeyValuePairNode(separator, keyNode, valueNode);
+  }
+
+  static createObjectSeparatorNode(
+    lhs: FilterNode<any>,
+    separator: string,
+    rhs: FilterNode<any>
+  ) {
+    Errors.throwIfEitherLeftHandSideOrRightHandSideInvalid(
+      lhs,
+      rhs,
+      "Object Separator Node"
+    );
+
+    return new ObjectSeparatorNode(separator, lhs, rhs);
+  }
+
+  static createObjectNode(startNode?: FilterNode<any>) {
+    const objectNode = new ObjectNode();
+    if (Utilities.isNullOrUndefined(startNode)) {
+      return objectNode;
+    }
+
+    this.buildObjectNodeChildren(startNode, objectNode);
+    return objectNode;
+  }
+
+  private static buildObjectNodeChildren(
+    startNode: FilterNode<any>,
+    objectNode: ObjectNode
+  ) {
+    if (
+      Utilities.oneOf(Utilities.isNullOrUndefined, startNode, objectNode) ||
+      Utilities.notIn(
+        startNode.type,
+        FilterNodeType.KeyValuePair,
+        FilterNodeType.ObjectSeparator
+      )
+    ) {
+      return;
+    }
+
+    if (startNode.type === FilterNodeType.KeyValuePair) {
+      objectNode.add(startNode);
+      return;
+    }
+
+    const objectSeparatorNode = startNode as ObjectSeparatorNode;
+    objectNode.addSeparator(objectSeparatorNode);
+    this.buildObjectNodeChildren(objectSeparatorNode.left, objectNode);
+    this.buildObjectNodeChildren(objectSeparatorNode.right, objectNode);
   }
 
   static handleInParenthesis(node: FilterNode<any>) {
@@ -485,6 +667,9 @@ export const ParserOptions = {
   NotLogicalOperationNode,
   ListSeparatorNode,
   ListNode,
+  ObjectNode,
+  ObjectSeparatorNode,
+  KeyValuePairNode,
   createBoolNode: NodeCreators.createBoolNode.bind(NodeCreators),
   createStringNode: NodeCreators.createStringNode.bind(NodeCreators),
   createNumberNode: NodeCreators.createNumberNode.bind(NodeCreators),
@@ -496,5 +681,8 @@ export const ParserOptions = {
     NodeCreators.createBinaryLogicalOperationNode.bind(NodeCreators),
   createListSeparatorNode: NodeCreators.createListSeparatorNode,
   createListNode: NodeCreators.createListNode.bind(NodeCreators),
+  createKeyValuePairNode: NodeCreators.createKeyValuePairNode,
+  createObjectSeparatorNode: NodeCreators.createObjectSeparatorNode,
+  createObjectNode: NodeCreators.createObjectNode.bind(NodeCreators),
   handleInParenthesis: NodeCreators.handleInParenthesis.bind(NodeCreators),
 };

@@ -6,10 +6,12 @@ declare global {
       Opening: {
         Square: string;
         Round: string;
+        Curly: string;
       };
       Closing: {
         Square: string;
         Round: string;
+        Curly: string;
       };
     };
     Punctuations: {
@@ -39,10 +41,12 @@ function setUpStringType() {
     Opening: {
       Square: "[",
       Round: "(",
+      Curly: "{",
     },
     Closing: {
       Square: "]",
       Round: ")",
+      Curly: "}",
     },
   };
   String.Punctuations = {
