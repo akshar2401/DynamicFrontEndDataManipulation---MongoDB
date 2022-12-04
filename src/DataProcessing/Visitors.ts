@@ -48,7 +48,9 @@ export type PrintFilterTreeVisitorOptions = {
   printOutput?: boolean;
   defaultListSeparator?: (node?: ListNode) => string;
   defaultObjectSeparator?: (node?: ObjectNode) => string;
-  getSpacesAroundSeparator?(node?: SeparatedChildrenNode<any>): {
+  getSpacesAroundSeparator?(
+    node?: SeparatedChildrenNode<any> | (FilterNode<any> & ISeparatorNode)
+  ): {
     before: string;
     after: string;
   };
@@ -167,25 +169,18 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
     );
   }
 
-  private visitSeparatorNode(
-    filterNode: ISeparatorNode & FilterNode<any>,
-    spaceOnLeft = false,
-    spaceOnRight = true
-  ) {
+  private visitSeparatorNode(filterNode: ISeparatorNode & FilterNode<any>) {
     const childrenStringRepresentation: string[] = [];
     for (const child of filterNode.children) {
       const childStringRepresentation = child?.accept(this) ?? String.Empty;
       childrenStringRepresentation.push(childStringRepresentation);
     }
 
+    const spaces = this.options.getSpacesAroundSeparator(filterNode);
     return this.wrap(
       filterNode,
       childrenStringRepresentation.join(
-        String.join(
-          spaceOnLeft ? String.Space : String.Empty,
-          filterNode.separator,
-          spaceOnRight ? String.Space : String.Empty
-        )
+        String.join(spaces.before, filterNode.separator, spaces.after)
       )
     );
   }
