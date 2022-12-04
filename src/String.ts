@@ -69,7 +69,7 @@ function setUpStringType() {
   const originalTrimImpl = String.prototype.trim;
   String.prototype.trim = function (this: string, s?: string) {
     if (!s) {
-      return originalTrimImpl();
+      return originalTrimImpl.call(this);
     }
     let result = this;
     while (result && result.startsWith(s)) {
