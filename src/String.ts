@@ -16,6 +16,7 @@ declare global {
       Star: string;
       DoubleQuote: string;
       ForwardSlash: string;
+      Comma: string;
     };
     join(...strings: string[]): string;
     repeat(s: string, repeatCount: number): string;
@@ -48,6 +49,7 @@ function setUpStringType() {
     Star: "*",
     DoubleQuote: '"',
     ForwardSlash: "/",
+    Comma: ",",
   };
   String.join = function (...strings: string[]) {
     return String.Empty.concat(...strings);

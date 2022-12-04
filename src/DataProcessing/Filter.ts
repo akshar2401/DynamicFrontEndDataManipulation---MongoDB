@@ -20,7 +20,7 @@ export class ParserConfig {
 
 export interface IFilterQueryParser {
   parserConfig: ParserConfig;
-  parse(filterQuery: string): FilterNode<any>;
+  parse(filterQuery: string, options?: object): FilterNode<any>;
   getFilterQuery(filterTree: FilterNode<any>): string;
   getGrammar(): string;
 }
@@ -32,14 +32,15 @@ export default class FilterQueryParser implements IFilterQueryParser {
   constructor(public parserConfig: ParserConfig = undefined) {
     this.parserConfig ??= new ParserConfig();
   }
-  parse(filterQuery: string): FilterNode<any> {
+  parse(filterQuery: string, options = {}): FilterNode<any> {
     if (Utilities.isNullOrUndefined(this._parser)) {
       const grammar = this.getGrammar();
       this._parser = parserGenerator.generate(grammar, {
         cache: true,
       });
     }
-    return this._parser.parse(filterQuery, ParserOptions) as FilterNode<any>;
+    let parserOptions = Object.assign({}, options, ParserOptions);
+    return this._parser.parse(filterQuery, parserOptions) as FilterNode<any>;
   }
 
   getFilterQuery(filterTree: FilterNode<any>): string {
@@ -55,14 +56,20 @@ export default class FilterQueryParser implements IFilterQueryParser {
 
     const grammar = `
         {
+            Object.getOwnPropertyNames(options).forEach(name => {
+              this[name] = options[name];
+            }) 
+
             const {
                 NullFilterNode,
                 FloatLiteralNode,
                 IntegerLiteralNode,
                 BooleanLiteralNode,
                 IdentifierNode,
-                LogicalOperationNode,
-                createLogicalOperationNode,
+                BinaryLogicalOperationNode,
+                ListSeparatorNode,
+                ListNode,
+                createBinaryLogicalOperationNode,
                 createBoolNode,
                 ConditionNode,
                 createNumberNode,
@@ -71,6 +78,8 @@ export default class FilterQueryParser implements IFilterQueryParser {
                 createStringNode,
                 createConditionNode,
                 createUnaryOperationNode,
+                createListSeparatorNode,
+                createListNode,
                 NotLogicalOperationNode,
                 handleInParenthesis
             } = options;
@@ -81,13 +90,13 @@ export default class FilterQueryParser implements IFilterQueryParser {
         logicalOr
             = ${Utilities.modifyGrammarToRecognizeSpaces(
               'lhs:logicalAnd op:"||" rhs:logicalOr'
-            )} { return createLogicalOperationNode(lhs, op, rhs);}
+            )} { return createBinaryLogicalOperationNode(lhs, op, rhs);}
             / logicalAnd
 
         logicalAnd
             = ${Utilities.modifyGrammarToRecognizeSpaces(
               'lhs:condition op:"&&" rhs:logicalAnd'
-            )} { return createLogicalOperationNode(lhs, op, rhs);}
+            )} { return createBinaryLogicalOperationNode(lhs, op, rhs);}
             / condition
 
 
@@ -107,14 +116,27 @@ export default class FilterQueryParser implements IFilterQueryParser {
 
         booleanTerm
             = terminal
-            / op:"!" expr:logicalOr  {return createUnaryOperationNode(op, expr);}
+            / op:"!" expr:booleanTerm  {return createUnaryOperationNode(op, expr);}
             / "(" expr:logicalOr ")" {return handleInParenthesis(expr);}
+
 
         terminal "terminal"
             = boolean 
             / number
             / string
             / identifier
+            / ${Utilities.modifyGrammarToRecognizeSpaces(
+              '"[" "]"'
+            )} {return createListNode()}
+            / ${Utilities.modifyGrammarToRecognizeSpaces(
+              '"[" list:terminalList "]"'
+            )}  {return createListNode(list) }
+
+        terminalList "terminalList"
+          = ${Utilities.modifyGrammarToRecognizeSpaces(
+            'lhs:terminal sep:"," rhs:terminalList'
+          )} { return createListSeparatorNode(lhs, sep, rhs)}
+           / terminal
 
         boolean "boolean"
         = boolLiteral: ("true" / "false") {return createBoolNode(boolLiteral); }
@@ -124,7 +146,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
         string "string"
         = stringLiteral:('"' [^"]* '"') {return createStringNode(stringLiteral)}
         identifier "identifer"
-        = identifier: ([^ 0-9->=()!<&|"][^ ->=!<()&|"]*) {return createIdentifierNode(identifier)}
+        = identifier: ([^ 0-9->=()!<&|,"\\[\\]][^ ->=!<()&|,"\\[\\]]*) {return createIdentifierNode(identifier)}
         `;
     return grammar;
   }

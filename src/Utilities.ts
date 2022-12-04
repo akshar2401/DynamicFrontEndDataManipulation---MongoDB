@@ -8,11 +8,15 @@ export class Utilities {
   }
 
   static isNullOrUndefined(object: any) {
-    return this.isNull(object) || this.isUndefined(object);
+    return Utilities.isNull(object) || Utilities.isUndefined(object);
+  }
+
+  static oneOf(func: (object: any) => boolean, ...objects: any[]) {
+    return objects.some(func);
   }
 
   static isNotNullOrUndefined(object: any) {
-    return !this.isNullOrUndefined(object);
+    return !Utilities.isNullOrUndefined(object);
   }
 
   static isEmptyString(s: string) {
@@ -20,7 +24,7 @@ export class Utilities {
   }
 
   static isNotEmptyString(s: string) {
-    return !this.isEmptyString(s);
+    return !Utilities.isEmptyString(s);
   }
 
   static modifyGrammarToRecognizeSpaces(rule: string) {

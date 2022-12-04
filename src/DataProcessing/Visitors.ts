@@ -1,4 +1,4 @@
-import type {
+import {
   BinaryOperatorNode,
   BooleanLiteralNode,
   ConditionNode,
@@ -6,7 +6,9 @@ import type {
   FloatLiteralNode,
   IdentifierNode,
   IntegerLiteralNode,
-  LogicalOperationNode,
+  ListNode,
+  ListSeparatorNode,
+  BinaryLogicalOperationNode,
   NotLogicalOperationNode,
   NullFilterNode,
   StringLiteralNode,
@@ -17,13 +19,17 @@ export interface IFilterNodeVisitor<ReturnType> {
   visit(filterNode: FilterNode<any>): ReturnType;
   visitIntegerLiteralNode(filterNode: IntegerLiteralNode): ReturnType;
   visitFloatLiteralNode(filterNode: FloatLiteralNode): ReturnType;
-  visitLogicalOperationNode(filterNode: LogicalOperationNode): ReturnType;
+  visitBinaryLogicalOperationNode(
+    filterNode: BinaryLogicalOperationNode
+  ): ReturnType;
   visitConditionNode(filterNode: ConditionNode): ReturnType;
   visitStringLiteralNode(filterNode: StringLiteralNode): ReturnType;
   visitIdentifierNode(filterNode: IdentifierNode): ReturnType;
   visitBooleanLiteralNode(filterNode: BooleanLiteralNode): ReturnType;
   visitNullLiteralNode(filterNode: NullFilterNode): ReturnType;
   visitNotOperationNode(filterNode: NotLogicalOperationNode): ReturnType;
+  visitListNode(filterNode: ListNode): ReturnType;
+  visitListSeparatorNode(filterNode: ListSeparatorNode): ReturnType;
 }
 
 export interface IVisitorComptabileFilterNode<ReturnType> {
@@ -31,7 +37,10 @@ export interface IVisitorComptabileFilterNode<ReturnType> {
 }
 
 export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
-  constructor(private printOutput = false) {}
+  constructor(
+    private printOutput = false,
+    private defaultListSeparator = String.Punctuations.Comma
+  ) {}
 
   visit(filterNode: FilterNode<any>) {
     const output = filterNode.accept(this);
@@ -47,7 +56,9 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
     return this.wrap(filterNode, filterNode.data.toString());
   }
 
-  visitLogicalOperationNode(filterNode: LogicalOperationNode): string {
+  visitBinaryLogicalOperationNode(
+    filterNode: BinaryLogicalOperationNode
+  ): string {
     return this.visitBinaryOperatorNode(filterNode);
   }
   visitConditionNode(filterNode: ConditionNode): string {
@@ -89,6 +100,43 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
     return this.wrap(
       filterNode,
       String.join(filterNode.data.rawOperatorToken, lhs)
+    );
+  }
+
+  visitListNode(filterNode: ListNode): string {
+    let listNodeStringRepresentation = [String.Brackets.Opening.Square];
+    for (
+      let childIndex = 0;
+      childIndex < filterNode.childrenCount;
+      childIndex++
+    ) {
+      const childStringRepresentation =
+        filterNode.childAt(childIndex)?.accept(this) ?? String.Empty;
+      if (childIndex > 0) {
+        const separator =
+          childIndex - 1 < 0
+            ? this.defaultListSeparator
+            : filterNode.listSeparatorNodeAt(childIndex - 1)?.data ??
+              this.defaultListSeparator;
+        listNodeStringRepresentation.push(separator);
+      }
+
+      listNodeStringRepresentation.push(childStringRepresentation);
+    }
+    listNodeStringRepresentation.push(String.Brackets.Closing.Square);
+
+    return this.wrap(
+      filterNode,
+      listNodeStringRepresentation.join(String.Empty)
+    );
+  }
+
+  visitListSeparatorNode(filterNode: ListSeparatorNode): string {
+    const lhs = filterNode.left?.accept(this) ?? String.Empty;
+    const rhs = filterNode.right?.accept(this) ?? String.Empty;
+    return this.wrap(
+      filterNode,
+      String.join(lhs, String.Space, filterNode.data, String.Space, rhs)
     );
   }
 

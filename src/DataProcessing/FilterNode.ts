@@ -1,4 +1,4 @@
-import { ErrorMessages } from "../ErrorMessages";
+import { Errors } from "../Errors";
 import { Utilities } from "../Utilities";
 import type {
   IFilterNodeVisitor,
@@ -13,22 +13,24 @@ export enum FilterNodeType {
   String = "string",
   Identifier = "identifier",
   Condition = "condition",
-  LogicalOperation = "logical operation",
-  NotLogicalOperation = "Not Logical Operation",
+  BinaryLogicalOperation = "binary_logical_operation",
+  NotLogicalOperation = "not",
+  ListSeparator = "list_separator",
+  List = "list",
 }
 
-export enum LogicalOperator {
+export enum BinaryLogicalOperators {
   AND = "and",
   OR = "or",
 }
 
-export enum UnaryOperator {
+export enum UnaryLogicalOperators {
   NOT = "not",
 }
 const symbolsToOperators = {
-  "&&": LogicalOperator.AND,
-  "||": LogicalOperator.OR,
-  "!": UnaryOperator.NOT,
+  "&&": BinaryLogicalOperators.AND,
+  "||": BinaryLogicalOperators.OR,
+  "!": UnaryLogicalOperators.NOT,
 };
 
 export abstract class FilterNode<TData>
@@ -54,8 +56,24 @@ export abstract class FilterNode<TData>
     return this.yieldChildren();
   }
 
+  public childAt(index: number) {
+    return index < this._children.length ? this._children[index] : undefined;
+  }
+
+  public get childrenCount() {
+    return this._children.length;
+  }
+
+  public get firstChild() {
+    return this.childAt(0);
+  }
+
+  public get lastChild() {
+    return this.childAt(this.childrenCount - 1);
+  }
+
   private *yieldChildren() {
-    for (const child in this._children) {
+    for (const child of this._children) {
       yield child;
     }
   }
@@ -65,9 +83,7 @@ export abstract class FilterNode<TData>
 
 abstract class LeafFilterNode<TData> extends FilterNode<TData> {
   public override add() {
-    throw Error(
-      ErrorMessages.cannotNotHaveChildrenErrorMessage(this.type + " node")
-    );
+    throw Error(Errors.cannotNotHaveChildrenErrorMessage(this.type + " node"));
   }
 }
 
@@ -75,11 +91,9 @@ export class NullFilterNode extends LeafFilterNode<null> {
   public type = FilterNodeType.Null;
   public data: null = null;
 
-  public override get children(): Generator<string, void, unknown> {
+  public override get children(): Generator<FilterNode<any>, void, unknown> {
     throw Error(
-      ErrorMessages.cannotNotHaveChildrenErrorMessage(
-        FilterNodeType.Null + " node"
-      )
+      Errors.cannotNotHaveChildrenErrorMessage(FilterNodeType.Null + " node")
     );
   }
 
@@ -122,7 +136,7 @@ export class StringLiteralNode extends LeafFilterNode<string> {
   constructor(data: string) {
     super();
     if (!data) {
-      this.data = data;
+      this.data = String.Empty;
     } else {
       this.data = data.trim('"');
     }
@@ -188,7 +202,7 @@ export abstract class BinaryFilterNode<TData> extends FilterNode<TData> {
   public override add(childNode: FilterNode<any>): void {
     if (this._children.length === 2) {
       throw new Error(
-        ErrorMessages.noMoreThanChildrenErrorMessage(this.type + " node", 2)
+        Errors.noMoreThanChildrenErrorMessage(this.type + " node", 2)
       );
     }
     super.add(childNode);
@@ -242,11 +256,11 @@ export class ConditionNode extends BinaryOperatorNode<any> {
   }
 }
 
-export class LogicalOperationNode extends BinaryOperatorNode<any> {
-  public override type = FilterNodeType.LogicalOperation;
+export class BinaryLogicalOperationNode extends BinaryOperatorNode<any> {
+  public override type = FilterNodeType.BinaryLogicalOperation;
 
   constructor(
-    operator: LogicalOperator,
+    operator: BinaryLogicalOperators,
     lhs?: FilterNode<any>,
     rhs?: FilterNode<any>,
     rawOperatorToken?: string
@@ -255,7 +269,45 @@ export class LogicalOperationNode extends BinaryOperatorNode<any> {
   }
 
   public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitLogicalOperationNode(this);
+    return visitor.visitBinaryLogicalOperationNode(this);
+  }
+}
+
+export class ListSeparatorNode extends BinaryFilterNode<string> {
+  public override type = FilterNodeType.ListSeparator;
+  public data: string;
+  constructor(sep: string, lhs?: FilterNode<any>, rhs?: FilterNode<any>) {
+    super(lhs, rhs);
+    this.data = sep;
+  }
+
+  public accept(visitor: IFilterNodeVisitor<any>) {
+    return visitor.visitListSeparatorNode(this);
+  }
+}
+
+export class ListNode extends FilterNode<number> {
+  public type = FilterNodeType.List;
+  /**
+   * Returns the length of the array
+   */
+  public get data() {
+    return this._children.length;
+  }
+
+  private listSeparator: ListSeparatorNode[] = [];
+
+  public addListSeparatorNode(node: ListSeparatorNode) {
+    this.listSeparator.push(node);
+  }
+
+  public listSeparatorNodeAt(index: number) {
+    return index < this.listSeparator.length
+      ? this.listSeparator[index]
+      : undefined;
+  }
+  public accept(visitor: IFilterNodeVisitor<any>) {
+    return visitor.visitListNode(this);
   }
 }
 
@@ -263,7 +315,7 @@ export abstract class UnaryOperationNode extends BinaryOperatorNode<any> {
   public add(childNode: FilterNode<any>): void {
     if (this._children.length === 1) {
       throw new Error(
-        ErrorMessages.noMoreThanChildrenErrorMessage(this.type + " node", 1)
+        Errors.noMoreThanChildrenErrorMessage(this.type + " node", 1)
       );
     }
 
@@ -271,7 +323,7 @@ export abstract class UnaryOperationNode extends BinaryOperatorNode<any> {
   }
 
   constructor(
-    operator: UnaryOperator,
+    operator: UnaryLogicalOperators,
     rawOperator?: string,
     lhs?: FilterNode<any>
   ) {
@@ -287,7 +339,7 @@ export class NotLogicalOperationNode extends UnaryOperationNode {
   public type = FilterNodeType.NotLogicalOperation;
 
   constructor(rawOperatorToken: string, lhs?: FilterNode<any>) {
-    super(UnaryOperator.NOT, rawOperatorToken, lhs);
+    super(UnaryLogicalOperators.NOT, rawOperatorToken, lhs);
   }
   public accept(visitor: IFilterNodeVisitor<any>) {
     return visitor.visitNotOperationNode(this);
@@ -347,12 +399,12 @@ export class NodeCreators {
     return new ConditionNode(operator, lhs, rhs);
   }
 
-  static createLogicalOperationNode(
+  static createBinaryLogicalOperationNode(
     lhs: FilterNode<any>,
     operator: string,
     rhs: FilterNode<any>
   ) {
-    return new LogicalOperationNode(
+    return new BinaryLogicalOperationNode(
       symbolsToOperators[operator],
       lhs,
       rhs,
@@ -361,13 +413,50 @@ export class NodeCreators {
   }
 
   static createUnaryOperationNode(operator: string, lhs: FilterNode<any>) {
-    const unaryOp: UnaryOperator = symbolsToOperators[operator];
+    const unaryOp: UnaryLogicalOperators = symbolsToOperators[operator];
     switch (unaryOp) {
-      case UnaryOperator.NOT:
+      case UnaryLogicalOperators.NOT:
         return new NotLogicalOperationNode(operator, lhs);
       default:
         return new NullFilterNode();
     }
+  }
+
+  static createListSeparatorNode(
+    lhs: FilterNode<any>,
+    sep: string,
+    rhs: FilterNode<any>
+  ) {
+    return new ListSeparatorNode(sep, lhs, rhs);
+  }
+
+  static createListNode(startNode?: FilterNode<any>) {
+    const listNode = new ListNode();
+    if (Utilities.isNullOrUndefined(startNode)) {
+      return listNode;
+    }
+
+    this.buildListNodeChildren(startNode, listNode);
+    return listNode;
+  }
+
+  private static buildListNodeChildren(
+    startNode: FilterNode<any>,
+    listNode: ListNode
+  ) {
+    if (Utilities.oneOf(Utilities.isNullOrUndefined, startNode, listNode)) {
+      return;
+    }
+
+    if (startNode.type !== FilterNodeType.ListSeparator) {
+      listNode.add(startNode);
+      return;
+    }
+
+    const listSeparatorNode = startNode as ListSeparatorNode;
+    listNode.addListSeparatorNode(listSeparatorNode);
+    this.buildListNodeChildren(listSeparatorNode.left, listNode);
+    this.buildListNodeChildren(listSeparatorNode.right, listNode);
   }
 
   static handleInParenthesis(node: FilterNode<any>) {
@@ -392,8 +481,10 @@ export const ParserOptions = {
   StringLiteralNode,
   IdentifierNode,
   ConditionNode,
-  LogicalOperationNode,
+  BinaryLogicalOperationNode,
   NotLogicalOperationNode,
+  ListSeparatorNode,
+  ListNode,
   createBoolNode: NodeCreators.createBoolNode.bind(NodeCreators),
   createStringNode: NodeCreators.createStringNode.bind(NodeCreators),
   createNumberNode: NodeCreators.createNumberNode.bind(NodeCreators),
@@ -401,7 +492,9 @@ export const ParserOptions = {
   createConditionNode: NodeCreators.createConditionNode.bind(NodeCreators),
   createUnaryOperationNode:
     NodeCreators.createUnaryOperationNode.bind(NodeCreators),
-  createLogicalOperationNode:
-    NodeCreators.createLogicalOperationNode.bind(NodeCreators),
+  createBinaryLogicalOperationNode:
+    NodeCreators.createBinaryLogicalOperationNode.bind(NodeCreators),
+  createListSeparatorNode: NodeCreators.createListSeparatorNode,
+  createListNode: NodeCreators.createListNode.bind(NodeCreators),
   handleInParenthesis: NodeCreators.handleInParenthesis.bind(NodeCreators),
 };
