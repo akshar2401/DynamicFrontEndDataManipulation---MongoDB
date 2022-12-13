@@ -2,6 +2,7 @@ declare global {
   interface StringConstructor {
     Empty: string;
     Space: string;
+    Newline: string;
     Brackets: {
       Opening: {
         Square: string;
@@ -19,6 +20,7 @@ declare global {
       DoubleQuote: string;
       ForwardSlash: string;
       Comma: string;
+      Equals: string;
     };
     join(...strings: string[]): string;
     repeat(s: string, repeatCount: number): string;
@@ -37,6 +39,7 @@ declare global {
 function setUpStringType() {
   String.Empty = "";
   String.Space = " ";
+  String.Newline = "\n";
   String.Brackets = {
     Opening: {
       Square: "[",
@@ -54,6 +57,7 @@ function setUpStringType() {
     DoubleQuote: '"',
     ForwardSlash: "/",
     Comma: ",",
+    Equals: "=",
   };
   String.join = function (...strings: string[]) {
     return String.Empty.concat(...strings);

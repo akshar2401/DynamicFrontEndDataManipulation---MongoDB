@@ -148,7 +148,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
 
         terimalObjectKeyValuePair "terimalObjectKeyValuePair"
           = ${Utilities.modifyGrammarToRecognizeSpaces(
-            'key:(identifier/string) sep:":" value:terminal'
+            'key:(identifier/string/number) sep:":" value:terminal'
           )} {return createKeyValuePairNode(key, sep, value); }
 
         terminalListLiteral "terminalListLiteral"
@@ -172,7 +172,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
         string "string"
         = stringLiteral:('"' [^"]* '"') {return createStringNode(stringLiteral)}
         identifier "identifer"
-        = identifier: ([^ 0-9->=(){}!<&|:,"\\[\\]] ([^ ->=!<()&|:{},"\\[\\]]*)) {return createIdentifierNode(identifier)}
+        = identifier: ([^ 0-9->=(){}!<&|:,"\\[\\]] ([^->=!<()&|:{},"\\]\\[ ]*)) {return createIdentifierNode(identifier)}
         `;
     return grammar;
   }

@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "outDir": "lib",
-        "target": "esNext",
+        "target": "ES2015",
         "rootDir": "src",
         "module": "CommonJS",
     } 

@@ -60,7 +60,9 @@ export abstract class FilterNode<TData>
   }
 
   public childAt(index: number) {
-    return index < this._children.length ? this._children[index] : undefined;
+    return Utilities.isValidIndex(index, this._children.length)
+      ? this._children[index]
+      : undefined;
   }
 
   public get childrenCount() {
@@ -79,6 +81,10 @@ export abstract class FilterNode<TData>
     for (const child of this._children) {
       yield child;
     }
+  }
+
+  public As<NodeType>(): NodeType {
+    return this as unknown as NodeType;
   }
 
   public abstract accept(visitor: IFilterNodeVisitor<any>);
@@ -444,7 +450,6 @@ export class NodeCreators {
     if (Utilities.isNullOrUndefined(isFloat)) {
       isFloat = token.includes(".");
     }
-    console.log(tokens);
     if (isFloat) {
       return new FloatLiteralNode(token);
     } else {
@@ -472,8 +477,6 @@ export class NodeCreators {
     ) {
       return new NullFilterNode();
     }
-    console.log(token);
-    console.log(tokens);
     return new IdentifierNode(token);
   }
 
