@@ -20,28 +20,80 @@ import {
   SeparatedChildrenNode,
 } from "./FilterNode";
 
-export interface IFilterNodeVisitor<ReturnType> {
-  visit(filterNode: FilterNode<any>): ReturnType;
-  visitIntegerLiteralNode(filterNode: IntegerLiteralNode): ReturnType;
-  visitFloatLiteralNode(filterNode: FloatLiteralNode): ReturnType;
-  visitBinaryLogicalOperationNode(
-    filterNode: BinaryLogicalOperationNode
+export interface IFilterNodeVisitor<
+  ReturnType = any,
+  AdditionalInfoType = any
+> {
+  visit(
+    filterNode: FilterNode<any>,
+    additionalInfo?: AdditionalInfoType
   ): ReturnType;
-  visitConditionNode(filterNode: ConditionNode): ReturnType;
-  visitStringLiteralNode(filterNode: StringLiteralNode): ReturnType;
-  visitIdentifierNode(filterNode: IdentifierNode): ReturnType;
-  visitBooleanLiteralNode(filterNode: BooleanLiteralNode): ReturnType;
-  visitNullLiteralNode(filterNode: NullFilterNode): ReturnType;
-  visitNotOperationNode(filterNode: NotLogicalOperationNode): ReturnType;
-  visitListNode(filterNode: ListNode): ReturnType;
-  visitListSeparatorNode(filterNode: ListSeparatorNode): ReturnType;
-  visitKeyValuePairNode(filterNode: KeyValuePairNode): ReturnType;
-  visitObjectNode(filterNode: ObjectNode): ReturnType;
-  visitObjectSeparatorNode(filterNode: ObjectSeparatorNode): ReturnType;
+  visitIntegerLiteralNode(
+    filterNode: IntegerLiteralNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitFloatLiteralNode(
+    filterNode: FloatLiteralNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitBinaryLogicalOperationNode(
+    filterNode: BinaryLogicalOperationNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitConditionNode(
+    filterNode: ConditionNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitStringLiteralNode(
+    filterNode: StringLiteralNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitIdentifierNode(
+    filterNode: IdentifierNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitBooleanLiteralNode(
+    filterNode: BooleanLiteralNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitNullLiteralNode(
+    filterNode: NullFilterNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitNotOperationNode(
+    filterNode: NotLogicalOperationNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitListNode(
+    filterNode: ListNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitListSeparatorNode(
+    filterNode: ListSeparatorNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitKeyValuePairNode(
+    filterNode: KeyValuePairNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitObjectNode(
+    filterNode: ObjectNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
+  visitObjectSeparatorNode(
+    filterNode: ObjectSeparatorNode,
+    additionalInfo?: AdditionalInfoType
+  ): ReturnType;
 }
 
-export interface IVisitorComptabileFilterNode<ReturnType> {
-  accept(visitor: IFilterNodeVisitor<ReturnType>): ReturnType;
+export interface IVisitorComptabileFilterNode<
+  ReturnType = any,
+  AdditionalInfoType = any
+> {
+  accept(
+    visitor: IFilterNodeVisitor<ReturnType>,
+    additionalInfo: AdditionalInfoType
+  ): ReturnType;
 }
 
 export type PrintFilterTreeVisitorOptions = {

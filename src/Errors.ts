@@ -1,5 +1,5 @@
 import type { FilterNode } from "./DataProcessing";
-import type { PrintFilterTreeVisitor } from "./DataProcessing/Visitors";
+import type { PrintFilterTreeVisitor } from "./DataProcessing/Filter/Visitors";
 import { Utilities } from "./Utilities";
 
 export class Errors {
@@ -89,6 +89,18 @@ export class Errors {
     Errors.throwIfNullOrUndefined(
       rhs,
       String.join(rhsDescription, " of ", nodeType)
+    );
+  }
+
+  static throwNotSupportedError(prefix = "", suffix = "") {
+    throw new Error(
+      String.join(
+        prefix,
+        String.Space,
+        "is not supported",
+        String.Space,
+        suffix
+      )
     );
   }
 }

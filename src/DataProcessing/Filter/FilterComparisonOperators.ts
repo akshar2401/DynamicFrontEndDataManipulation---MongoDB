@@ -1,6 +1,7 @@
-import { Errors } from "../Errors";
+import { Errors } from "../../Errors";
 
-export interface IComparisonOperator {
+export interface IComparisonOperator
+  extends IVisitorComptabileComparisonOperator<any> {
   operator: string;
   get precedence(): number;
   evaluate(...args: any[]): any;
@@ -18,6 +19,8 @@ export abstract class BaseComparisonOperator implements IComparisonOperator {
   }
 
   public abstract evaluate(...args: any[]);
+
+  public abstract accept(visitor: IFilterComparisonOperatorVisitor<any>);
 }
 
 export abstract class BinaryOperator extends BaseComparisonOperator {
@@ -40,6 +43,10 @@ export class GreaterThanEqualTo extends BinaryOperator {
   protected _evaluate(a, b) {
     return a >= b;
   }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitGreaterThanEqualTo(this);
+  }
 }
 
 export class LessThanEqualTo extends BinaryOperator {
@@ -49,6 +56,10 @@ export class LessThanEqualTo extends BinaryOperator {
 
   protected _evaluate(a: any, b: any) {
     return a <= b;
+  }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitLessThanEqualTo(this);
   }
 }
 
@@ -60,6 +71,9 @@ export class EqualTo extends BinaryOperator {
   protected _evaluate(a: any, b: any) {
     return a == b;
   }
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitEqualTo(this);
+  }
 }
 
 export class StrictEqualTo extends BinaryOperator {
@@ -69,6 +83,10 @@ export class StrictEqualTo extends BinaryOperator {
 
   protected _evaluate(a: any, b: any) {
     return a === b;
+  }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitStrictEqualTo(this);
   }
 }
 
@@ -80,6 +98,10 @@ export class StrictNotEqualTo extends BinaryOperator {
   protected _evaluate(a: any, b: any) {
     return a !== b;
   }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitStrictNotEqualTo(this);
+  }
 }
 
 export class NotEqualTo extends BinaryOperator {
@@ -89,6 +111,10 @@ export class NotEqualTo extends BinaryOperator {
 
   protected _evaluate(a: any, b: any) {
     return a != b;
+  }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitNotEqualTo(this);
   }
 }
 
@@ -100,6 +126,10 @@ export class LessThan extends BinaryOperator {
   protected _evaluate(a: any, b: any) {
     return a < b;
   }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitLessThan(this);
+  }
 }
 
 export class GreaterThan extends BinaryOperator {
@@ -110,6 +140,10 @@ export class GreaterThan extends BinaryOperator {
   protected _evaluate(a: any, b: any) {
     return a > b;
   }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitGreaterThan(this);
+  }
 }
 
 export class In extends BinaryOperator {
@@ -119,6 +153,10 @@ export class In extends BinaryOperator {
 
   protected _evaluate(a: any, b: any) {
     return a in b;
+  }
+
+  public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
+    return visitor.visitIn(this);
   }
 }
 
@@ -134,4 +172,21 @@ export function getInBuiltComparisonOperators() {
     new LessThanEqualTo(),
     new In(),
   ];
+}
+
+export interface IFilterComparisonOperatorVisitor<ReturnType> {
+  visit(operator: IComparisonOperator): ReturnType;
+  visitGreaterThanEqualTo(operator: GreaterThanEqualTo): ReturnType;
+  visitGreaterThan(operator: GreaterThan): ReturnType;
+  visitLessThan(operator: LessThan): ReturnType;
+  visitEqualTo(operator: EqualTo): ReturnType;
+  visitStrictEqualTo(operator: StrictEqualTo): ReturnType;
+  visitNotEqualTo(operator: NotEqualTo): ReturnType;
+  visitStrictNotEqualTo(operator: StrictNotEqualTo): ReturnType;
+  visitLessThanEqualTo(operator: LessThanEqualTo): ReturnType;
+  visitIn(operator: In): ReturnType;
+}
+
+export interface IVisitorComptabileComparisonOperator<ReturnType> {
+  accept(visitor: IFilterComparisonOperatorVisitor<ReturnType>): ReturnType;
 }

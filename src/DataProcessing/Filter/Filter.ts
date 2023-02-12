@@ -1,5 +1,5 @@
 import * as parserGenerator from "peggy";
-import { Utilities } from "../Utilities";
+import { Utilities } from "../../Utilities";
 import {
   getInBuiltComparisonOperators,
   IComparisonOperator,

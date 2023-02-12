@@ -1,5 +1,5 @@
-import { Errors } from "../Errors";
-import { Utilities } from "../Utilities";
+import { Errors } from "../../Errors";
+import { Utilities } from "../../Utilities";
 import type {
   IFilterNodeVisitor,
   IVisitorComptabileFilterNode,
@@ -37,7 +37,7 @@ const symbolsToOperators = {
 };
 
 export abstract class FilterNode<TData>
-  implements IVisitorComptabileFilterNode<any>
+  implements IVisitorComptabileFilterNode
 {
   public abstract type: FilterNodeType;
   protected _children: FilterNode<any>[];
@@ -47,6 +47,11 @@ export abstract class FilterNode<TData>
   constructor() {
     this._children = [];
   }
+
+  public abstract accept(
+    visitor: IFilterNodeVisitor<any, any>,
+    additionalInfo?: any
+  );
 
   public add(childNode: FilterNode<any>) {
     if (!childNode) {
@@ -86,8 +91,6 @@ export abstract class FilterNode<TData>
   public As<NodeType>(): NodeType {
     return this as unknown as NodeType;
   }
-
-  public abstract accept(visitor: IFilterNodeVisitor<any>);
 }
 
 abstract class LeafFilterNode<TData> extends FilterNode<TData> {
@@ -106,8 +109,8 @@ export class NullFilterNode extends LeafFilterNode<null> {
     );
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitNullLiteralNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitNullLiteralNode(this, additionalInfo);
   }
 }
 
@@ -119,8 +122,8 @@ export class IntegerLiteralNode extends LeafFilterNode<number> {
     this.data = typeof data === "string" ? parseInt(data) : data;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitIntegerLiteralNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitIntegerLiteralNode(this, additionalInfo);
   }
 }
 
@@ -133,8 +136,8 @@ export class FloatLiteralNode extends LeafFilterNode<number> {
     this.data = typeof data === "string" ? parseFloat(data) : data;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitFloatLiteralNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitFloatLiteralNode(this, additionalInfo);
   }
 }
 
@@ -151,8 +154,8 @@ export class StringLiteralNode extends LeafFilterNode<string> {
     }
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitStringLiteralNode(this);
+  public accept(visitor: IFilterNodeVisitor<any, any>, additionalInfo?: any) {
+    return visitor.visitStringLiteralNode(this, additionalInfo);
   }
 }
 
@@ -162,8 +165,11 @@ export class IdentifierNode extends StringLiteralNode {
   constructor(data: string) {
     super(data);
   }
-  public override accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitIdentifierNode(this);
+  public override accept(
+    visitor: IFilterNodeVisitor<any>,
+    additionalInfo?: any
+  ) {
+    return visitor.visitIdentifierNode(this, additionalInfo);
   }
 }
 
@@ -182,8 +188,8 @@ export class BooleanLiteralNode extends LeafFilterNode<boolean> {
     }
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitBooleanLiteralNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitBooleanLiteralNode(this, additionalInfo);
   }
 }
 
@@ -260,8 +266,8 @@ export class ConditionNode extends BinaryOperatorNode<any> {
     super(operator, operator, undefined, lhs, rhs);
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitConditionNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitConditionNode(this, additionalInfo);
   }
 }
 
@@ -277,8 +283,8 @@ export class BinaryLogicalOperationNode extends BinaryOperatorNode<any> {
     super(operator, rawOperatorToken, undefined, lhs, rhs);
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitBinaryLogicalOperationNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitBinaryLogicalOperationNode(this, additionalInfo);
   }
 }
 
@@ -301,8 +307,8 @@ export class ListSeparatorNode
     return this.data;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitListSeparatorNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitListSeparatorNode(this, additionalInfo);
   }
 }
 
@@ -329,8 +335,8 @@ export class ListNode extends SeparatedChildrenNode<number> {
     return this._children.length;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitListNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitListNode(this, additionalInfo);
   }
 }
 
@@ -361,8 +367,8 @@ export class KeyValuePairNode
     return this.right;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitKeyValuePairNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitKeyValuePairNode(this, additionalInfo);
   }
 }
 
@@ -382,8 +388,8 @@ export class ObjectSeparatorNode
     return this.data;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitObjectSeparatorNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitObjectSeparatorNode(this, additionalInfo);
   }
 }
 
@@ -396,8 +402,8 @@ export class ObjectNode extends SeparatedChildrenNode<number> {
     return this._children.length;
   }
 
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitObjectNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitObjectNode(this, additionalInfo);
   }
 }
 
@@ -431,8 +437,8 @@ export class NotLogicalOperationNode extends UnaryOperationNode {
   constructor(rawOperatorToken: string, lhs?: FilterNode<any>) {
     super(UnaryLogicalOperators.NOT, rawOperatorToken, lhs);
   }
-  public accept(visitor: IFilterNodeVisitor<any>) {
-    return visitor.visitNotOperationNode(this);
+  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
+    return visitor.visitNotOperationNode(this, additionalInfo);
   }
 }
 

@@ -3,8 +3,8 @@ import { ISorting } from "./Sorting";
 
 export * from "./Pagination";
 export * from "./Sorting";
-export * from "./Filter";
-export * from "./FilterNode";
+export * from "./Filter/Filter";
+export * from "./Filter/FilterNode";
 
 export class DataProcessingModel<SortingFieldType> {
   constructor(
