@@ -4,7 +4,8 @@ import {
   getInBuiltComparisonOperators,
   IComparisonOperator,
 } from "./FilterComparisonOperators";
-import { FilterNode, ParserOptions } from "./FilterNode";
+import { FilterNode } from "./FilterNode";
+import { ParserOptions } from "./NodeCreators";
 import { IFilterNodeVisitor, PrintFilterTreeVisitor } from "./Visitors";
 
 function noop() {}
@@ -35,8 +36,16 @@ export default class FilterQueryParser implements IFilterQueryParser {
   parse(filterQuery: string, options = {}): FilterNode<any> {
     if (Utilities.isNullOrUndefined(this._parser)) {
       const grammar = this.getGrammar();
+      console.log(
+        (
+          parserGenerator.parser.parse(
+            'logicalOr =lhs:logicalAnd op:"||" rhs:logicalOr'
+          ).rules[0].expression as any
+        ).elements
+      );
       this._parser = parserGenerator.generate(grammar, {
         cache: true,
+        plugins: [],
       });
     }
     let parserOptions = Object.assign({}, options, ParserOptions);
@@ -53,7 +62,6 @@ export default class FilterQueryParser implements IFilterQueryParser {
     ].sort(
       (operator1, operator2) => operator1.precedence - operator2.precedence
     );
-
     const grammar = `
         {
             Object.getOwnPropertyNames(options).forEach(name => {
@@ -61,20 +69,6 @@ export default class FilterQueryParser implements IFilterQueryParser {
             })
             
             const {
-                NullFilterNode,
-                FloatLiteralNode,
-                IntegerLiteralNode,
-                BooleanLiteralNode,
-                IdentifierNode,
-                BinaryLogicalOperationNode,
-                ListSeparatorNode,
-                ListNode,
-                ConditionNode,
-                StringLiteralNode,
-                NotLogicalOperationNode,
-                ObjectNode,
-                KeyValuePairNode,
-                ObjectSeparatorNode,
                 createBinaryLogicalOperationNode,
                 createBoolNode,
                 createNumberNode,
@@ -102,7 +96,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
         logicalAnd
             = ${Utilities.modifyGrammarToRecognizeSpaces(
               'lhs:condition op:"&&" rhs:logicalAnd'
-            )} { return createBinaryLogicalOperationNode(lhs, op, rhs);}
+            )} { return createBinaryLogicalOperationNode(lhs, op, rhs, range(), this);}
             / condition
 
 

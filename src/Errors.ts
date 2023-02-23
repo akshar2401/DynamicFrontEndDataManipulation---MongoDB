@@ -92,6 +92,31 @@ export class Errors {
     );
   }
 
+  static throwIfOutOfBounds(
+    index: number,
+    low: number,
+    high: number,
+    collectionDescription?: string
+  ) {
+    if (index < low || index > high) {
+      throw new Error(
+        String.join(
+          !Utilities.isNullOrUndefined(collectionDescription)
+            ? collectionDescription + ": "
+            : String.Empty,
+          index.toString(),
+          String.Space,
+          "is not between",
+          low.toString(),
+          String.Space,
+          "and",
+          String.Space,
+          high.toString()
+        )
+      );
+    }
+  }
+
   static throwNotSupportedError(prefix = "", suffix = "") {
     throw new Error(
       String.join(
