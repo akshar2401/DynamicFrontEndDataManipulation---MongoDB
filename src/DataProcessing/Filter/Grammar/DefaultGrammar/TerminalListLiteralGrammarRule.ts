@@ -1,4 +1,4 @@
-import { Utilities } from "../../../../Utilities";
+import { Utilities } from "../../../../Common";
 import { ListNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
@@ -7,6 +7,7 @@ import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { TerminalListRuleMatchReturnType } from "./TerminalListGrammarRule";
 
 export type TerminalListLiteralRuleMatchFirstArgType = [
+  any,
   HandleMatchAdditionalArgsType
 ];
 
@@ -34,10 +35,6 @@ export class TerminalListLiteralGrammarRule extends GrammarRuleWithMultipleChild
     ]);
   }
 
-  protected override shouldEmitActionInternal(ruleIndex: number): boolean {
-    return ruleIndex > 0;
-  }
-
   protected handleMatchInternal(
     ruleIndex: number,
     args: TerminalListLiteralRuleMatchArgs
@@ -46,7 +43,7 @@ export class TerminalListLiteralGrammarRule extends GrammarRuleWithMultipleChild
       case 0:
         return NodeCreators.createListNode(
           undefined,
-          (args as TerminalListLiteralRuleMatchFirstArgType)[0]
+          (args as TerminalListLiteralRuleMatchFirstArgType)[1]
         );
       case 1:
         return NodeCreators.createListNode(

@@ -1,4 +1,4 @@
-import { Utilities } from "../../../../Utilities";
+import { Utilities } from "../../../../Common";
 import { ConditionNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
@@ -9,7 +9,8 @@ import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 
 type ConditionActionFirstRuleParamTypes = [
   lhs: BooleanTermGrammarRuleMatchReturnType,
-  op: string,
+  op: ComparisonOperatorRuleMatchReturnType,
+  rawOperatorToken: string,
   rhs: ConditionRuleMatchReturnType,
   additionalArgs: HandleMatchAdditionalArgsType
 ];

@@ -1,3 +1,4 @@
+import { IComparisonOperator } from "./FilterComparisonOperators";
 import {
   BinaryOperatorNode,
   BooleanLiteralNode,
@@ -151,7 +152,9 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
   visitConditionNode(filterNode: ConditionNode): string {
     return this.visitBinaryOperatorNode(filterNode);
   }
-  private visitBinaryOperatorNode(filterNode: BinaryOperatorNode<any>): string {
+  private visitBinaryOperatorNode(
+    filterNode: BinaryOperatorNode<any, any>
+  ): string {
     const lhs = filterNode.left?.accept(this) ?? String.Empty;
     const rhs = filterNode.right?.accept(this) ?? String.Empty;
     return this.wrap(

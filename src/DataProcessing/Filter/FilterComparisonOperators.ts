@@ -1,4 +1,4 @@
-import { Errors } from "../../Errors";
+import { Errors } from "../../Common/";
 
 export interface IComparisonOperator
   extends IVisitorComptabileComparisonOperator<any> {

@@ -1,4 +1,3 @@
-import { ListSeparatorNode } from "../../FilterNode";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { BooleanRuleMatchReturnType } from "./BooleanGrammarRule";

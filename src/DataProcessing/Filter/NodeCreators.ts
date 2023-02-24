@@ -1,5 +1,5 @@
-import { Errors } from "../../Errors";
-import { Utilities } from "../../Utilities";
+import { Errors, Utilities } from "../../Common";
+import { IComparisonOperator } from "./FilterComparisonOperators";
 import {
   FilterNode,
   NullFilterNode,
@@ -28,9 +28,7 @@ export class NodeCreators {
     isFloat?: boolean,
     additionalArgs?: NodeCreatorAdditionalArguments
   ): FilterNode<number> | NullFilterNode {
-    if (Utilities.isNullOrUndefined(tokens) || tokens.length === 0) {
-      return new NullFilterNode();
-    }
+    Errors.throwIfObjEmptyOrNullOrUndefined(tokens, "createNumberNode.tokens");
     const token = this.flattenAndJoinTokens(tokens);
     if (Utilities.isNullOrUndefined(isFloat)) {
       isFloat = token.includes(".");
@@ -43,20 +41,18 @@ export class NodeCreators {
   }
 
   static createBoolNode(
-    token: TokenType,
+    tokens: TokenType,
     additionalArgs?: NodeCreatorAdditionalArguments
   ) {
-    return new BooleanLiteralNode(token);
+    Errors.throwIfObjEmptyOrNullOrUndefined(tokens, "createBoolNode.tokens");
+    return new BooleanLiteralNode(tokens);
   }
 
   static createStringNode(
     tokens: TokenType,
     additionalArgs?: NodeCreatorAdditionalArguments
   ) {
-    if (Utilities.isNullOrUndefined(tokens)) {
-      return new NullFilterNode();
-    }
-
+    Errors.throwIfObjEmptyOrNullOrUndefined(tokens, "createStringNode.tokens");
     return new StringLiteralNode(this.flattenAndJoinTokens(tokens));
   }
 
@@ -65,18 +61,22 @@ export class NodeCreators {
     additionalArgs?: NodeCreatorAdditionalArguments
   ) {
     let token: string;
-    if (
-      Utilities.isNullOrUndefined(tokens) ||
-      Utilities.isEmptyString((token = this.flattenAndJoinTokens(tokens)))
-    ) {
-      return new NullFilterNode();
-    }
+    Errors.throwIfObjEmptyOrNullOrUndefined(
+      tokens,
+      "createIdentifierNode.tokens"
+    );
+    Errors.throwIfObjEmptyOrNullOrUndefined(
+      (token = this.flattenAndJoinTokens(tokens)),
+      "createIdentifierNode.token"
+    );
+
     return new IdentifierNode(token);
   }
 
   static createConditionNode(
     lhs: FilterNode<any>,
-    operator: string,
+    operator: IComparisonOperator,
+    rawOperatorToken: string,
     rhs: FilterNode<any>,
     additionalArgs?: NodeCreatorAdditionalArguments
   ) {
@@ -85,7 +85,12 @@ export class NodeCreators {
       rhs,
       "Condition Node"
     );
-    return new ConditionNode(operator, lhs, rhs);
+    Errors.throwIfNullOrUndefined(operator, "createConditionNode.operator");
+    Errors.throwIfEmptyOrNullOrUndefined(
+      rawOperatorToken,
+      "createConditionNode.rawOperatorToken"
+    );
+    return new ConditionNode(operator, rawOperatorToken, lhs, rhs);
   }
 
   static createBinaryLogicalOperationNode(
@@ -148,6 +153,7 @@ export class NodeCreators {
       rhs,
       "List Separator Node"
     );
+    Errors.throwIfEmptyOrNullOrUndefined(sep, "createListSeparatorNode.sep");
     return new ListSeparatorNode(sep, lhs, rhs);
   }
 
@@ -196,6 +202,10 @@ export class NodeCreators {
       "Key Node",
       "Value Node"
     );
+    Errors.throwIfEmptyOrNullOrUndefined(
+      separator,
+      "createKeyValuePairNode.separator"
+    );
 
     return new KeyValuePairNode(separator, keyNode, valueNode);
   }
@@ -210,6 +220,10 @@ export class NodeCreators {
       lhs,
       rhs,
       "Object Separator Node"
+    );
+    Errors.throwIfEmptyOrNullOrUndefined(
+      separator,
+      "createObjectSeparatorNode.separator"
     );
 
     return new ObjectSeparatorNode(separator, lhs, rhs);
@@ -258,6 +272,7 @@ export class NodeCreators {
     node: FilterNode<any>,
     additionalArgs?: NodeCreatorAdditionalArguments
   ) {
+    Errors.throwIfNullOrUndefined(node, "handleInParenthesis.node");
     node.parenthesisDepth++;
     return node;
   }

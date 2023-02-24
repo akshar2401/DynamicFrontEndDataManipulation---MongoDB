@@ -1,4 +1,4 @@
-import { Utilities } from "../../../../Utilities";
+import { Utilities } from "../../../../Common";
 import { ObjectSeparatorNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";

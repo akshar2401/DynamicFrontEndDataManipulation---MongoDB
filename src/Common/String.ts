@@ -36,7 +36,7 @@ declare global {
   }
 }
 
-function setUpStringType() {
+export function setUpStringType() {
   String.Empty = "";
   String.Space = " ";
   String.Newline = "\n";
@@ -101,5 +101,3 @@ function setUpStringType() {
     return String.join(left, this, right ?? left);
   };
 }
-
-export default setUpStringType;

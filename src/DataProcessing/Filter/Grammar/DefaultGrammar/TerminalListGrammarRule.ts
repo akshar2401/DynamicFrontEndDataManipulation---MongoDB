@@ -1,4 +1,4 @@
-import { Utilities } from "../../../../Utilities";
+import { Utilities } from "../../../../Common";
 import { ListSeparatorNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
@@ -33,7 +33,7 @@ export class TerminalListGrammarRule extends GrammarRuleWithMultipleChildRules<
   constructor() {
     super(DefaultGrammarRuleLabel.TerminalListRule, [
       Utilities.modifyGrammarToRecognizeSpaces(
-        `lhs:${DefaultGrammarRuleLabel.TerminalRule} sep:"," rhs:terminalList`
+        `lhs:${DefaultGrammarRuleLabel.TerminalRule} sep:"," rhs:${DefaultGrammarRuleLabel.TerminalListRule}`
       ),
       DefaultGrammarRuleLabel.TerminalRule,
     ]);

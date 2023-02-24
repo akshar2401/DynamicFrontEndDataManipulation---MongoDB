@@ -1,5 +1,5 @@
-import type { FilterNode } from "./DataProcessing";
-import type { PrintFilterTreeVisitor } from "./DataProcessing/Filter/Visitors";
+import type { FilterNode } from "../DataProcessing";
+import type { PrintFilterTreeVisitor } from "../DataProcessing/Filter/Visitors";
 import { Utilities } from "./Utilities";
 
 export class Errors {
@@ -82,6 +82,16 @@ export class Errors {
   ) {
     this.throwIfNullOrUndefined(string, stringDescription);
     this.throwIfEmpty(string, stringDescription);
+  }
+
+  static throwIfObjEmptyOrNullOrUndefined(
+    obj: { length: number },
+    objectDescription: string = "object"
+  ) {
+    this.throwIfNullOrUndefined(obj, objectDescription);
+    if (obj.length === 0) {
+      String.join(objectDescription, String.Space, "cannot be empty");
+    }
   }
 
   static throwIfEitherLeftHandSideOrRightHandSideInvalid(

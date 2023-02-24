@@ -1,5 +1,5 @@
-import { Errors } from "../../Errors";
-import { Utilities } from "../../Utilities";
+import { Errors, Utilities } from "../../Common";
+import { IComparisonOperator } from "./FilterComparisonOperators";
 import type {
   IFilterNodeVisitor,
   IVisitorComptabileFilterNode,
@@ -194,10 +194,10 @@ export class BooleanLiteralNode extends LeafFilterNode<boolean> {
   }
 }
 
-export type BinaryOperatorNodeData<T> = {
-  operator: string;
+export type BinaryOperatorNodeData<TData = any, operator = string> = {
+  operator: operator;
   rawOperatorToken: string;
-  data?: T;
+  data?: TData;
 };
 
 export abstract class BinaryFilterNode<TData> extends FilterNode<TData> {
@@ -239,19 +239,20 @@ export abstract class BinaryFilterNode<TData> extends FilterNode<TData> {
   }
 }
 
-export abstract class BinaryOperatorNode<TData> extends BinaryFilterNode<
-  BinaryOperatorNodeData<TData>
-> {
-  public override data: BinaryOperatorNodeData<TData>;
+export abstract class BinaryOperatorNode<
+  TData = any,
+  operator = string
+> extends BinaryFilterNode<BinaryOperatorNodeData<TData, operator>> {
+  public override data: BinaryOperatorNodeData<TData, operator>;
   constructor(
-    operator: string,
+    operator: operator,
     rawOperatorToken?: string,
     data?: TData,
     lhs?: FilterNode<any>,
     rhs?: FilterNode<any>
   ) {
     super(lhs, rhs);
-    rawOperatorToken ??= operator;
+    rawOperatorToken ??= "";
     this.data = {
       operator,
       rawOperatorToken,
@@ -260,11 +261,20 @@ export abstract class BinaryOperatorNode<TData> extends BinaryFilterNode<
   }
 }
 
-export class ConditionNode extends BinaryOperatorNode<any> {
+export class ConditionNode<TData = any> extends BinaryOperatorNode<
+  TData,
+  IComparisonOperator
+> {
   public override type = FilterNodeType.Condition;
 
-  constructor(operator: string, lhs: FilterNode<any>, rhs: FilterNode<any>) {
-    super(operator, operator, undefined, lhs, rhs);
+  constructor(
+    operator: IComparisonOperator,
+    rawOperatorToken: string,
+    lhs: FilterNode<any>,
+    rhs: FilterNode<any>,
+    data?: TData
+  ) {
+    super(operator, rawOperatorToken, data, lhs, rhs);
   }
 
   public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {

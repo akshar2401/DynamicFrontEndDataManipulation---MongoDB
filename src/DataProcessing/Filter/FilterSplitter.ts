@@ -1,4 +1,4 @@
-import { Errors } from "../../Errors";
+import { Errors } from "../../Common";
 import {
   FilterNode,
   IntegerLiteralNode,

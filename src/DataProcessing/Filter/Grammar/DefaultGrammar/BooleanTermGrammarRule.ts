@@ -3,7 +3,6 @@ import {
   FilterNode,
   UnaryOperationNode,
 } from "../../FilterNode";
-import { NodeCreatorAdditionalArguments } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";

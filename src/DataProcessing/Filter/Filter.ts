@@ -1,5 +1,5 @@
 import * as parserGenerator from "peggy";
-import { Utilities } from "../../Utilities";
+import { Utilities } from "../../Common";
 import {
   getInBuiltComparisonOperators,
   IComparisonOperator,
@@ -46,7 +46,18 @@ export default class FilterQueryParser implements IFilterQueryParser {
         plugins: [],
       });
     }
-    let parserOptions = Object.assign({}, options, ParserOptions);
+    let parserOptions = Object.assign(
+      {
+        getComparisonOperator: (op: string) => {
+          const operatorObj = (
+            this.parserConfig.supportedComparisonOperators || []
+          ).find((operator) => operator.operator === op);
+          return operatorObj;
+        },
+      },
+      options,
+      ParserOptions
+    );
     return this._parser.parse(filterQuery, parserOptions) as FilterNode<any>;
   }
 
@@ -102,7 +113,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
         condition   
             =${Utilities.modifyGrammarToRecognizeSpaces(
               "lhs:booleanTerm op:comparisonOp rhs:condition"
-            )} {return createConditionNode(lhs, op, rhs)}
+            )} {return createConditionNode(lhs,options.getComparisonOperator(op), op, rhs)}
                 / booleanTerm
 
         comparisonOp

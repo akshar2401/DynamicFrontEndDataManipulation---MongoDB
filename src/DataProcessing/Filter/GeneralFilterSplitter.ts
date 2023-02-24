@@ -1,4 +1,4 @@
-import { Utilities } from "../../Utilities";
+import { Utilities } from "../../Common";
 import { FilterNode } from "./FilterNode";
 import {
   ICanBeSplitComputationVisitor,

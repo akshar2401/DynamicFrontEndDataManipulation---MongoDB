@@ -1,5 +1,4 @@
-import { Errors } from "../../../Errors";
-import { Utilities } from "../../../Utilities";
+import { Errors, Utilities } from "../../../Common";
 import { IGrammarRule } from "./GrammarRule.types";
 
 export abstract class GrammarRule<MatchArgTypes, ReturnType>

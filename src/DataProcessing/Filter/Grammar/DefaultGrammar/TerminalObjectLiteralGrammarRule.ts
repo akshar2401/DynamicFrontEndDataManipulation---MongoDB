@@ -1,4 +1,4 @@
-import { Utilities } from "../../../../Utilities";
+import { Utilities } from "../../../../Common";
 import { ObjectNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
@@ -7,6 +7,7 @@ import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { TerminalObjectRuleMatchReturnType } from "./TerminalObjectGrammarRule";
 
 export type TerminalObjectLiteralRuleMatchFirstArgType = [
+  any,
   HandleMatchAdditionalArgsType
 ];
 
@@ -34,10 +35,6 @@ export class TerminalObjectLiteralGrammarRule extends GrammarRuleWithMultipleChi
     ]);
   }
 
-  protected override shouldEmitActionInternal(ruleIndex: number): boolean {
-    return ruleIndex > 0;
-  }
-
   protected handleMatchInternal(
     ruleIndex: number,
     args: TerminalObjectLiteralRuleMatchArgs
@@ -46,7 +43,7 @@ export class TerminalObjectLiteralGrammarRule extends GrammarRuleWithMultipleChi
       case 0:
         return NodeCreators.createObjectNode(
           undefined,
-          (args as TerminalObjectLiteralRuleMatchFirstArgType)[0]
+          (args as TerminalObjectLiteralRuleMatchFirstArgType)[1]
         );
       case 1:
         return NodeCreators.createObjectNode(
