@@ -6,6 +6,7 @@ import {
 import { NodeCreatorAdditionalArguments } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 
 export type BooleanTermGrammarRuleMatchReturnType =
@@ -14,16 +15,16 @@ export type BooleanTermGrammarRuleMatchReturnType =
   | FilterNode<any>;
 type BooleanTermGrammarRuleFirstRuleMatchArgs = [
   FilterNode<any>,
-  NodeCreatorAdditionalArguments | undefined
+  HandleMatchAdditionalArgsType
 ];
 type BooleanTermGrammarRuleSecondRuleMatchArgs = [
   operator: string,
   lhs: BooleanTermGrammarRuleMatchReturnType,
-  additionalArgs: NodeCreatorAdditionalArguments | undefined
+  additionalArgs: HandleMatchAdditionalArgsType
 ];
 type BooleanTermGrammarRuleThirdRuleMatchArgs = [
   node: BinaryLogicalOperationNode,
-  additionalArgs: NodeCreatorAdditionalArguments | undefined
+  additionalArgs: HandleMatchAdditionalArgsType
 ];
 type BooleanTermGrammarRuleMatchArgs =
   | BooleanTermGrammarRuleFirstRuleMatchArgs
@@ -36,9 +37,9 @@ export class BooleanTermGrammarRule extends GrammarRuleWithMultipleChildRules<
 > {
   constructor() {
     super(DefaultGrammarRuleLabel.BooleanTermRule, [
-      "terminal",
-      'op:"!" expr:booleanTerm',
-      '"(" expr:logicalOr ")"',
+      DefaultGrammarRuleLabel.TerminalRule,
+      `op:"!" expr:${DefaultGrammarRuleLabel.BooleanTermRule}`,
+      `"(" expr:${DefaultGrammarRuleLabel.LogicalOrRule} ")"`,
     ]);
   }
   protected override handleMatchInternal(

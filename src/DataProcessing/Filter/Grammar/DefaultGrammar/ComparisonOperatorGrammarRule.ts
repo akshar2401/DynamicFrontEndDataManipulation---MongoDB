@@ -43,8 +43,9 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
 
   public override get rules(): string[] {
     if (this._convertSortedRules) {
-      this._rules = this._sortedRules.toArray();
-      this._rules = this._rules.map((rule) => rule.surroundWithQuotes());
+      this._rules = this._sortedRules.map((rule: string) =>
+        rule.surroundWithQuotes()
+      );
       this._convertSortedRules = false;
     }
     return this._rules;

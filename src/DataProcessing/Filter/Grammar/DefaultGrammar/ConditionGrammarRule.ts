@@ -1,8 +1,8 @@
 import { Utilities } from "../../../../Utilities";
 import { ConditionNode } from "../../FilterNode";
-import { NodeCreatorAdditionalArguments } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { BooleanTermGrammarRuleMatchReturnType } from "./BooleanTermGrammarRule";
 import { ComparisonOperatorRuleMatchReturnType } from "./ComparisonOperatorGrammarRule";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
@@ -11,11 +11,11 @@ type ConditionActionFirstRuleParamTypes = [
   lhs: BooleanTermGrammarRuleMatchReturnType,
   op: string,
   rhs: ConditionRuleMatchReturnType,
-  additionalArgs: NodeCreatorAdditionalArguments | undefined
+  additionalArgs: HandleMatchAdditionalArgsType
 ];
 type ConditionActionSecondRuleParamTypes = [
   BooleanTermGrammarRuleMatchReturnType,
-  NodeCreatorAdditionalArguments | undefined
+  HandleMatchAdditionalArgsType
 ];
 type ConditionActionParamTypes =
   | ConditionActionFirstRuleParamTypes
@@ -32,9 +32,9 @@ export class ConditionGrammarRule extends GrammarRuleWithMultipleChildRules<
   constructor() {
     super(DefaultGrammarRuleLabel.ConditionRule, [
       Utilities.modifyGrammarToRecognizeSpaces(
-        "lhs:booleanTerm op:comparisonOp rhs:condition"
+        `lhs:${DefaultGrammarRuleLabel.BooleanTermRule} op:${DefaultGrammarRuleLabel.ComparisonOperatorRule} rhs:${DefaultGrammarRuleLabel.ConditionRule}`
       ),
-      "booleanTerm",
+      DefaultGrammarRuleLabel.BooleanTermRule,
     ]);
   }
   protected override handleMatchInternal(

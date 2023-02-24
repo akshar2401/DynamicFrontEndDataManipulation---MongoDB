@@ -42,7 +42,10 @@ export class NodeCreators {
     }
   }
 
-  static createBoolNode(token: TokenType) {
+  static createBoolNode(
+    token: TokenType,
+    additionalArgs?: NodeCreatorAdditionalArguments
+  ) {
     return new BooleanLiteralNode(token);
   }
 

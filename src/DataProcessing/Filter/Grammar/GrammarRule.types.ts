@@ -1,4 +1,6 @@
-export interface IGrammarRule<MatchArgTypes, ReturnType> {
+import { NodeCreatorAdditionalArguments } from "../NodeCreator.types";
+
+export interface IGrammarRule<MatchArgTypes = any[], ReturnType = any> {
   label: string;
   id: string;
   rules: string[];
@@ -7,5 +9,11 @@ export interface IGrammarRule<MatchArgTypes, ReturnType> {
   ruleAt(index: number): string;
   handleMatch(ruleIndex: number, args: MatchArgTypes): ReturnType;
   addRule(rule: string): void;
+  shouldEmitAction(ruleIndex: number): boolean;
+  isStartRule: boolean;
   addChild(child: IGrammarRule<any, any>): void;
 }
+
+export type HandleMatchAdditionalArgsType =
+  | NodeCreatorAdditionalArguments
+  | undefined;

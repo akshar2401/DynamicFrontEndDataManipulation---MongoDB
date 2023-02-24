@@ -47,6 +47,15 @@ export class Errors {
     }
   }
 
+  static throwIfNotArray(obj: any, objectDescription: string = "object") {
+    this.throwIfNullOrUndefined(obj, objectDescription);
+    if (!Array.isArray(obj)) {
+      throw new Error(
+        String.join(objectDescription, String.Space, " is not an array")
+      );
+    }
+  }
+
   static throwIfInvalid(
     isInvalid: (object: any) => boolean,
     object: any,

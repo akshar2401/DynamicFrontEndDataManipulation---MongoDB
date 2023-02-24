@@ -1,4 +1,5 @@
 import { Errors } from "../../../Errors";
+import { Utilities } from "../../../Utilities";
 import { IGrammarRule } from "./GrammarRule.types";
 
 export abstract class GrammarRule<MatchArgTypes, ReturnType>
@@ -8,7 +9,11 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
   public readonly id: string;
   protected _rules: string[];
   public readonly children: IGrammarRule<any, any>[] = [];
-  constructor(public readonly label: string, rules: string[] = []) {
+  constructor(
+    public readonly label: string,
+    rules: string[] = [],
+    public readonly isStartRule = false
+  ) {
     Errors.throwIfEmptyOrNullOrUndefined(label, "Label");
     this.id = GrammarRule._counter.toString();
     GrammarRule._counter++;
@@ -42,11 +47,22 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
     this.children.push(child);
   }
 
+  shouldEmitAction(ruleIndex: number): boolean {
+    if (!Utilities.isValidIndex(ruleIndex, this.numberOfRules - 1)) {
+      return false;
+    }
+
+    return this.shouldEmitActionInternal(ruleIndex);
+  }
+  protected shouldEmitActionInternal(ruleIndex: number) {
+    return true;
+  }
+
   abstract handleMatch(ruleIndex: number, args: MatchArgTypes): ReturnType;
 }
 
 export abstract class GrammarRuleWithMultipleChildRules<
-  MatchArgTypes,
+  MatchArgTypes extends Array<unknown>,
   ReturnType
 > extends GrammarRule<MatchArgTypes, ReturnType> {
   handleMatch(ruleIndex: number, args: MatchArgTypes): ReturnType {
@@ -56,6 +72,7 @@ export abstract class GrammarRuleWithMultipleChildRules<
       this.numberOfRules - 1,
       "Rules of " + this.label
     );
+    Errors.throwIfNotArray(args, "Arguments to handleMatch for " + this.label);
     return this.handleMatchInternal(ruleIndex, args);
   }
 

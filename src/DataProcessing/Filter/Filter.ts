@@ -8,8 +8,6 @@ import { FilterNode } from "./FilterNode";
 import { ParserOptions } from "./NodeCreators";
 import { IFilterNodeVisitor, PrintFilterTreeVisitor } from "./Visitors";
 
-function noop() {}
-
 export class ParserConfig {
   constructor(public supportedComparisonOperators?: IComparisonOperator[]) {
     this.supportedComparisonOperators ??= getInBuiltComparisonOperators();
@@ -166,7 +164,7 @@ export default class FilterQueryParser implements IFilterQueryParser {
         string "string"
         = stringLiteral:('"' [^"]* '"') {return createStringNode(stringLiteral)}
         identifier "identifer"
-        = identifier: ([^ 0-9->=(){}!<&|:,"\\[\\]] ([^->=!<()&|:{},"\\]\\[ ]*)) {return createIdentifierNode(identifier)}
+        = identifier:([^ 0-9->=(){}!<&|:,"\\[\\]] ([^->=!<()&|:{},"\\]\\[ ]*)) {return createIdentifierNode(identifier)}
         `;
     return grammar;
   }

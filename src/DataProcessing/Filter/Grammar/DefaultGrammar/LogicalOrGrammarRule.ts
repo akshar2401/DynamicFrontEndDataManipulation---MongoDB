@@ -1,8 +1,8 @@
 import { Utilities } from "../../../../Utilities";
 import { BinaryLogicalOperationNode } from "../../FilterNode";
-import { NodeCreatorAdditionalArguments } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { LogicalAndRuleMatchReturnType } from "./LogicalAndGrammarRule";
 
@@ -10,11 +10,11 @@ type LogicalOrActionFirstRuleParamTypes = [
   lhs: LogicalAndRuleMatchReturnType,
   op: string,
   rhs: LogicalOrRuleMatchReturnType,
-  additionalArgs: NodeCreatorAdditionalArguments | undefined
+  additionalArgs: HandleMatchAdditionalArgsType
 ];
 type LogicalOrActionSecondRuleParamTypes = [
   LogicalAndRuleMatchReturnType,
-  NodeCreatorAdditionalArguments | undefined
+  HandleMatchAdditionalArgsType
 ];
 type LogicalOrActionParamTypes =
   | LogicalOrActionFirstRuleParamTypes
@@ -31,9 +31,9 @@ export class LogicalOrGrammarRule extends GrammarRuleWithMultipleChildRules<
   constructor() {
     super(DefaultGrammarRuleLabel.LogicalOrRule, [
       Utilities.modifyGrammarToRecognizeSpaces(
-        'lhs:logicalAnd op:"||" rhs:logicalOr'
+        `lhs:${DefaultGrammarRuleLabel.LogicalAndRule} op:"||" rhs:${DefaultGrammarRuleLabel.LogicalOrRule}`
       ),
-      "logicalAnd",
+      DefaultGrammarRuleLabel.LogicalAndRule,
     ]);
   }
   protected override handleMatchInternal(

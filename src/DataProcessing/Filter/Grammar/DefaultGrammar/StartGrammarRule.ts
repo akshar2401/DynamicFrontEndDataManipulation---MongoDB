@@ -1,23 +1,23 @@
-import { BinaryLogicalOperationNode } from "../../FilterNode";
-import { NodeCreatorAdditionalArguments } from "../../NodeCreator.types";
-import { GrammarRule } from "../GrammarRule";
+import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { LogicalOrRuleMatchReturnType } from "./LogicalOrGrammarRule";
 
-export class StartGrammarRule extends GrammarRule<
-  [LogicalOrRuleMatchReturnType, NodeCreatorAdditionalArguments | undefined],
+export class StartGrammarRule extends GrammarRuleWithMultipleChildRules<
+  [LogicalOrRuleMatchReturnType, HandleMatchAdditionalArgsType],
   LogicalOrRuleMatchReturnType
 > {
   constructor() {
-    super(DefaultGrammarRuleLabel.StartRule, ["logicalOr"]);
+    super(
+      DefaultGrammarRuleLabel.StartRule,
+      [DefaultGrammarRuleLabel.LogicalOrRule],
+      true
+    );
   }
 
-  handleMatch(
+  protected handleMatchInternal(
     _: number,
-    args: [
-      LogicalOrRuleMatchReturnType,
-      NodeCreatorAdditionalArguments | undefined
-    ]
+    args: [LogicalOrRuleMatchReturnType, HandleMatchAdditionalArgsType]
   ): LogicalOrRuleMatchReturnType {
     return args[0];
   }
