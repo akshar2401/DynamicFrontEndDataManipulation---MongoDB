@@ -5,6 +5,7 @@ import {
 } from "../../FilterComparisonOperators";
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
+import SortedSet = require("collections/sorted-set");
 
 export type ComparisonOperatorRuleMatchReturnType = IComparisonOperator;
 type ComparisonOperatorRuleArgs = any;
@@ -14,6 +15,22 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
   ComparisonOperatorRuleMatchReturnType
 > {
   private readonly _operators = new Map<string, IComparisonOperator>();
+  private readonly _sortedRules = new SortedSet<string>(
+    [],
+    (operatorName1, operatorName2) => {
+      return operatorName1 === operatorName2;
+    },
+    (operatorName1, operatorName2) => {
+      const operator1 = this._operators.get(operatorName1);
+      const operator2 = this._operators.get(operatorName2);
+      let compareValue = operator1.precedence - operator2.precedence;
+      if (compareValue === 0) {
+        compareValue = operatorName1 > operatorName2 ? -1 : 1;
+      }
+      return compareValue;
+    }
+  );
+  private _convertSortedRules = true;
   constructor() {
     super(DefaultGrammarRuleLabel.ComparisonOperatorRule);
   }
@@ -25,11 +42,26 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
   }
 
   public override get rules(): string[] {
-    return Array.from(this.operators)
-      .sort(
-        (operator1, operator2) => operator1.precedence - operator2.precedence
-      )
-      .map((operator) => operator.operator.surroundWithQuotes());
+    if (this._convertSortedRules) {
+      this._rules = this._sortedRules.toArray();
+      this._rules = this._rules.map((rule) => rule.surroundWithQuotes());
+      this._convertSortedRules = false;
+    }
+    return this._rules;
+  }
+
+  public override get numberOfRules() {
+    return this._sortedRules.length;
+  }
+
+  public override ruleAt(index: number): string {
+    Errors.throwIfOutOfBounds(
+      index,
+      0,
+      this.numberOfRules - 1,
+      "Rules of " + this.label
+    );
+    return this._sortedRules.slice(index, index + 1)[0];
   }
 
   public addOperator(operator: IComparisonOperator) {
@@ -40,6 +72,8 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
     }
 
     this._operators.set(operator.operator, operator);
+    this._sortedRules.add(operator.operator);
+    this._convertSortedRules = true;
   }
 
   public get operators() {
@@ -55,9 +89,7 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
   protected handleMatchInternal(
     ruleIndex: number
   ): ComparisonOperatorRuleMatchReturnType {
-    const operatorName = this.rules[ruleIndex].trim(
-      String.Punctuations.DoubleQuote
-    );
+    const operatorName = this.ruleAt(ruleIndex);
     if (!this._operators.has(operatorName)) {
       Errors.throwIfInvalid(
         () => true,

@@ -6,7 +6,7 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
 {
   private static _counter = 1;
   public readonly id: string;
-  private _rules: string[];
+  protected _rules: string[];
   public readonly children: IGrammarRule<any, any>[] = [];
   constructor(public readonly label: string, rules: string[] = []) {
     Errors.throwIfEmptyOrNullOrUndefined(label, "Label");
@@ -21,6 +21,20 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
 
   public get rules() {
     return this._rules;
+  }
+
+  public get numberOfRules() {
+    return this._rules.length;
+  }
+
+  public ruleAt(index: number): string {
+    Errors.throwIfOutOfBounds(
+      index,
+      0,
+      this.numberOfRules - 1,
+      "Rules of " + this.label
+    );
+    return this._rules[index];
   }
 
   public addChild(child: IGrammarRule<any, any>): void {
@@ -39,7 +53,7 @@ export abstract class GrammarRuleWithMultipleChildRules<
     Errors.throwIfOutOfBounds(
       ruleIndex,
       0,
-      this.rules.length - 1,
+      this.numberOfRules - 1,
       "Rules of " + this.label
     );
     return this.handleMatchInternal(ruleIndex, args);

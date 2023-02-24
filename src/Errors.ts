@@ -106,7 +106,7 @@ export class Errors {
             : String.Empty,
           index.toString(),
           String.Space,
-          "is not between",
+          "is not between ",
           low.toString(),
           String.Space,
           "and",
