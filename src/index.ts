@@ -19,6 +19,10 @@ import * as parserGenerator from "peggy";
 import { IdentifierGrammarRule } from "./DataProcessing/Filter/Grammar/DefaultGrammar/IdentifierGrammarRule";
 import { NumberGrammarRule } from "./DataProcessing/Filter/Grammar/DefaultGrammar/NumberGrammarRule";
 import { IGrammarRule } from "./DataProcessing/Filter/Grammar/GrammarRule.types";
+import {
+  DefaultGrammarBuilder,
+  getLabels,
+} from "./DataProcessing/Filter/Grammar";
 
 setUpStringType();
 
@@ -29,3 +33,8 @@ const tree = parser.parse(
 );
 const printVisitor = new PrintFilterTreeVisitor({ printOutput: true });
 printVisitor.visit(tree);
+const g = parser.getGrammar();
+const gt = parserGenerator.parser.parse(g);
+console.log(getLabels(gt));
+const builder = new DefaultGrammarBuilder();
+console.log(builder.startGrammarRule);

@@ -111,6 +111,18 @@ export class Errors {
     );
   }
 
+  static throwIfNotFunction(func: any, funcDescription = undefined) {
+    funcDescription = Utilities.isNotNullOrUndefined(funcDescription)
+      ? funcDescription
+      : Utilities.isNotNullOrUndefined(func.name)
+      ? func.name
+      : "Function";
+    this.throwIfNullOrUndefined(func, funcDescription);
+    if (typeof func !== "function") {
+      throw new Error(funcDescription + " is not a function");
+    }
+  }
+
   static throwIfOutOfBounds(
     index: number,
     low: number,
