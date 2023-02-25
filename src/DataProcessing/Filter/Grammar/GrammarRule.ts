@@ -47,7 +47,7 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
   }
 
   shouldEmitAction(ruleIndex: number): boolean {
-    if (!Utilities.isValidIndex(ruleIndex, this.numberOfRules - 1)) {
+    if (!Utilities.isValidIndex(ruleIndex, this.numberOfRules)) {
       return false;
     }
 

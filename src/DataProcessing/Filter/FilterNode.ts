@@ -8,7 +8,6 @@ import type {
 export enum FilterNodeType {
   Integer = "integer",
   Float = "float",
-  Null = "null",
   Boolean = "boolean",
   String = "string",
   Identifier = "identifier",
@@ -42,7 +41,8 @@ export abstract class FilterNode<TData>
   public abstract type: FilterNodeType;
   protected _children: FilterNode<any>[];
   public abstract data: TData;
-  public span: { start: number; end: number };
+  protected _span: { start: number; end: number };
+
   public parenthesisDepth = 0;
 
   constructor() {
@@ -89,6 +89,35 @@ export abstract class FilterNode<TData>
     }
   }
 
+  public get span() {
+    return this._span;
+  }
+
+  public set span(span: { start: number; end: number }) {
+    Errors.throwIfNullOrUndefined(
+      span?.start,
+      "Start in Span of " + this.type + " node"
+    );
+    Errors.throwIfNullOrUndefined(
+      span?.end,
+      "End in Span of " + this.type + " node"
+    );
+    Errors.throwIfInvalid(
+      (span: { start: number; end: number }) => span.start > span.end,
+      span,
+      `Span [${span.start}, ${span.end}] of ${this.type} node`
+    );
+    this._span = span;
+  }
+
+  public get spanWithoutAccountingParenthesis() {
+    const span = this.span;
+    return {
+      start: span.start + this.parenthesisDepth,
+      end: span.end - this.parenthesisDepth,
+    };
+  }
+
   public As<NodeType>(): NodeType {
     return this as unknown as NodeType;
   }
@@ -97,21 +126,6 @@ export abstract class FilterNode<TData>
 abstract class LeafFilterNode<TData> extends FilterNode<TData> {
   public override add() {
     throw Error(Errors.cannotNotHaveChildrenErrorMessage(this.type + " node"));
-  }
-}
-
-export class NullFilterNode extends LeafFilterNode<null> {
-  public type = FilterNodeType.Null;
-  public data: null = null;
-
-  public override get children(): Generator<FilterNode<any>, void, unknown> {
-    throw Error(
-      Errors.cannotNotHaveChildrenErrorMessage(FilterNodeType.Null + " node")
-    );
-  }
-
-  public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
-    return visitor.visitNullLiteralNode(this, additionalInfo);
   }
 }
 

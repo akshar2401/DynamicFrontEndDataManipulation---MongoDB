@@ -1,4 +1,4 @@
-import { Errors } from "../../../../Common/Errors";
+import { Errors } from "../../../../Common";
 import {
   getInBuiltComparisonOperators,
   IComparisonOperator,
@@ -6,9 +6,10 @@ import {
 import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import SortedSet = require("collections/sorted-set");
+import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 
 export type ComparisonOperatorRuleMatchReturnType = IComparisonOperator;
-type ComparisonOperatorRuleArgs = any;
+type ComparisonOperatorRuleArgs = [string, HandleMatchAdditionalArgsType];
 
 export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildRules<
   ComparisonOperatorRuleArgs,
@@ -62,7 +63,7 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
       this.numberOfRules - 1,
       "Rules of " + this.label
     );
-    return this._sortedRules.slice(index, index + 1)[0];
+    return this.rules[index];
   }
 
   public addOperator(operator: IComparisonOperator) {
@@ -88,16 +89,15 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
   }
 
   protected handleMatchInternal(
-    ruleIndex: number
+    _: number,
+    args: ComparisonOperatorRuleArgs
   ): ComparisonOperatorRuleMatchReturnType {
-    const operatorName = this.ruleAt(ruleIndex);
-    if (!this._operators.has(operatorName)) {
-      Errors.throwIfInvalid(
-        () => true,
-        operatorName,
-        `${operatorName} operator`
-      );
-    }
+    const operatorName = args[0];
+    Errors.throwIfInvalid(
+      (operatorName: string) => !this._operators.has(operatorName),
+      operatorName,
+      `${operatorName} operator`
+    );
     return this._operators.get(operatorName);
   }
 }

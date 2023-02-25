@@ -3,6 +3,7 @@ declare global {
     Empty: string;
     Space: string;
     Newline: string;
+    Tab: string;
     Brackets: {
       Opening: {
         Square: string;
@@ -21,6 +22,8 @@ declare global {
       ForwardSlash: string;
       Comma: string;
       Equals: string;
+      Colon: string;
+      SemiColon: string;
     };
     join(...strings: string[]): string;
     repeat(s: string, repeatCount: number): string;
@@ -40,6 +43,7 @@ export function setUpStringType() {
   String.Empty = "";
   String.Space = " ";
   String.Newline = "\n";
+  String.Tab = "\t";
   String.Brackets = {
     Opening: {
       Square: "[",
@@ -58,6 +62,8 @@ export function setUpStringType() {
     ForwardSlash: "/",
     Comma: ",",
     Equals: "=",
+    Colon: ":",
+    SemiColon: ";",
   };
   String.join = function (...strings: string[]) {
     return String.Empty.concat(...strings);

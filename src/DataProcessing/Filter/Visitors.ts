@@ -11,7 +11,6 @@ import {
   ListSeparatorNode,
   BinaryLogicalOperationNode,
   NotLogicalOperationNode,
-  NullFilterNode,
   StringLiteralNode,
   UnaryOperationNode,
   KeyValuePairNode,
@@ -55,10 +54,6 @@ export interface IFilterNodeVisitor<
   ): ReturnType;
   visitBooleanLiteralNode(
     filterNode: BooleanLiteralNode,
-    additionalInfo?: AdditionalInfoType
-  ): ReturnType;
-  visitNullLiteralNode(
-    filterNode: NullFilterNode,
     additionalInfo?: AdditionalInfoType
   ): ReturnType;
   visitNotOperationNode(
@@ -178,9 +173,7 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
   visitBooleanLiteralNode(filterNode: BooleanLiteralNode): string {
     return this.wrap(filterNode, filterNode.data.toString());
   }
-  visitNullLiteralNode(filterNode: NullFilterNode): string {
-    return this.wrap(filterNode, String.Empty);
-  }
+
   visitNotOperationNode(filterNode: NotLogicalOperationNode): string {
     return this.visitUnaryOperatorNode(filterNode);
   }

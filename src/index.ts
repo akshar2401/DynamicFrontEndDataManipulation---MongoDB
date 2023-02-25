@@ -26,15 +26,22 @@ import {
 
 setUpStringType();
 
-const parser = new FilterQueryParser();
-console.log("1 > 2 || true && false".length);
-const tree = parser.parse(
-  '1 > 2 || true && false || u in {u:1, "asssss": c, "list": []}'
-);
 const printVisitor = new PrintFilterTreeVisitor({ printOutput: true });
-printVisitor.visit(tree);
-const g = parser.getGrammar();
-const gt = parserGenerator.parser.parse(g);
-console.log(getLabels(gt));
 const builder = new DefaultGrammarBuilder();
-console.log(builder.startGrammarRule);
+console.log(builder.emitGrammar());
+const parser1 = parserGenerator.generate(builder.emitGrammar(), {
+  cache: true,
+});
+const options = {
+  handleMatch(id: string, ruleIndex: number, args: any[]) {
+    return builder.getGrammarRuleById(id).handleMatch(ruleIndex, args);
+  },
+};
+const expr =
+  '(((x)) == "ss" && (1 > 2 || true && false || u in {u:1, "asssss": c, "list": []}))';
+
+const tree: FilterNode<any> = parser1.parse(expr, options);
+printVisitor.visit(tree);
+console.log(expr.length);
+console.log(tree.firstChild.firstChild);
+console.log(tree.firstChild.firstChild.spanWithoutAccountingParenthesis);

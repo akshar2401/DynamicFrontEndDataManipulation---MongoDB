@@ -8,7 +8,6 @@ import {
   StringLiteralNode,
   IdentifierNode,
   BooleanLiteralNode,
-  NullFilterNode,
   NotLogicalOperationNode,
   ListNode,
   ListSeparatorNode,
@@ -97,15 +96,7 @@ export class CanBeSplitComputationVisitor
   visitBooleanLiteralNode(filterNode: BooleanLiteralNode) {
     return this.getResultAndRecordIfNodeCanBeSplit(filterNode);
   }
-  visitNullLiteralNode(
-    filterNode: NullFilterNode
-  ): ICanBeSplitComputationResult {
-    Errors.throwNotSupportedError(
-      "Computing post order split status",
-      "Null literal node"
-    );
-    return;
-  }
+
   visitNotOperationNode(filterNode: NotLogicalOperationNode) {
     this.visitChildren(filterNode);
     return this.getResultAndRecordIfNodeCanBeSplit(filterNode);

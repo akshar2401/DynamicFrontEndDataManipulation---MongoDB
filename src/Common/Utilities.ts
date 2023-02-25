@@ -51,4 +51,11 @@ export class Utilities {
       )
     );
   }
+
+  static *enumerate<T>(array: T[]) {
+    for (let i = 0; i < array.length; i++) {
+      const pair: [index: number, element: T] = [i, array[i]];
+      yield pair;
+    }
+  }
 }

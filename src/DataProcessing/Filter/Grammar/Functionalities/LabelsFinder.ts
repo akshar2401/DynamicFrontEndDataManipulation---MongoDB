@@ -10,3 +10,13 @@ export function getLabels(node: parserGenerator.ast.Node<any>) {
   );
   return nodes.map((node) => node.label);
 }
+
+export function getLabelsFromRule(label: string, rule: string) {
+  const correctedRule = label + " = " + rule;
+  try {
+    const ruleAst = parserGenerator.parser.parse(correctedRule);
+    return getLabels(ruleAst);
+  } catch {
+    return [];
+  }
+}

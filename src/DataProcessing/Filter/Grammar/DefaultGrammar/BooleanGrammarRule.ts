@@ -21,6 +21,6 @@ export class BooleanGrammarRule extends GrammarRuleWithMultipleChildRules<
     _: number,
     args: BooleanRuleMatchArgs
   ): BooleanRuleMatchReturnType {
-    return NodeCreators.createBoolNode(...args);
+    return NodeCreators.createBooleanLiteralNode(...args);
   }
 }

@@ -10,7 +10,6 @@ import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 type ConditionActionFirstRuleParamTypes = [
   lhs: BooleanTermGrammarRuleMatchReturnType,
   op: ComparisonOperatorRuleMatchReturnType,
-  rawOperatorToken: string,
   rhs: ConditionRuleMatchReturnType,
   additionalArgs: HandleMatchAdditionalArgsType
 ];
