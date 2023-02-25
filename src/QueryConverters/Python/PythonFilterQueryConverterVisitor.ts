@@ -81,11 +81,14 @@ export class PythonFilterQueryConverterVisitor<AdditionalInfoType = any>
       filterNode?.right,
       filterNode.type
     );
-    const leftCcnvertedQuery: string = filterNode.left.accept(
+    const leftConvertedQuery: string = filterNode.left.accept(
       this,
       additionalInfo
     );
-    const rightConvertedQuery = filterNode.right.accept(this, additionalInfo);
+    const rightConvertedQuery: string = filterNode.right.accept(
+      this,
+      additionalInfo
+    );
     let pythonEquivalentOperator: string;
     switch (filterNode.data.operator) {
       case BinaryLogicalOperators.AND:
@@ -96,7 +99,7 @@ export class PythonFilterQueryConverterVisitor<AdditionalInfoType = any>
     return this.wrap(
       filterNode,
       String.join(
-        leftCcnvertedQuery,
+        leftConvertedQuery,
         String.Space,
         pythonEquivalentOperator,
         String.Space,
