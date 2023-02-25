@@ -5,6 +5,7 @@ import { setUpStringType } from "./Common";
 import {
   ConditionNode,
   FilterNode,
+  IdentifierNode,
   KeyValuePairNode,
   ObjectNode,
   ObjectSeparatorNode,
@@ -23,6 +24,7 @@ import {
   DefaultGrammarBuilder,
   getLabels,
 } from "./DataProcessing/Filter/Grammar";
+import { PythonFilterQueryConverter } from "./QueryConverters";
 
 setUpStringType();
 
@@ -38,10 +40,11 @@ const options = {
   },
 };
 const expr =
-  '(((x)) == "ss" && (1 > 2 || true && false || u in {u:1, "asssss": c, "list": []}))';
+  '(((x)) !== "ss" && (1 > 2 || true && false || u in {u:1, "asssss": c, "list": [1,2,3,{}]}))';
 
 const tree: FilterNode<any> = parser1.parse(expr, options);
 printVisitor.visit(tree);
-console.log(expr.length);
-console.log(tree.firstChild.firstChild);
-console.log(tree.firstChild.firstChild.spanWithoutAccountingParenthesis);
+const pythonVisitor = new PythonFilterQueryConverter({
+  findBestPossibleMatchForNonPythonExistingComparisonOperators: true,
+});
+console.log(pythonVisitor.convert(tree));

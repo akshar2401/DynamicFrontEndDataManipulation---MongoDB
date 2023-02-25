@@ -1,5 +1,5 @@
 import { Errors, Utilities } from "../../../../Common";
-import { getLabels, getLabelsFromRule } from "../Functionalities";
+import { getLabelsFromRule } from "../Functionalities";
 import { IGrammarRule } from "../GrammarRule.types";
 import { IGrammarBuilder } from "./Builder.types";
 

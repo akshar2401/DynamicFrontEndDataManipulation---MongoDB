@@ -1,3 +1,4 @@
+import { Utilities } from "../../Common";
 import { IComparisonOperator } from "./FilterComparisonOperators";
 import {
   BinaryOperatorNode,
@@ -277,17 +278,6 @@ export class PrintFilterTreeVisitor implements IFilterNodeVisitor<string> {
   }
 
   private wrap(filterNode: FilterNode<any>, expr: string) {
-    return filterNode.parenthesisDepth > 0
-      ? expr.surroundWith(
-          String.repeat(
-            String.Brackets.Opening.Round,
-            filterNode.parenthesisDepth
-          ),
-          String.repeat(
-            String.Brackets.Closing.Round,
-            filterNode.parenthesisDepth
-          )
-        )
-      : expr;
+    return Utilities.wrap(filterNode, expr);
   }
 }

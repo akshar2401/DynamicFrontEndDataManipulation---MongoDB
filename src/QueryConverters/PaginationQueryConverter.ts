@@ -1,5 +1,5 @@
 import { IPagination } from "../DataProcessing";
 import { IQueryConverter } from "./QueryConverter";
 
-export interface IPaginationQueryConverter<Query>
-  extends IQueryConverter<IPagination, Query> {}
+export interface IPaginationQueryConverter<Query, AdditionalInfoType = any>
+  extends IQueryConverter<IPagination, Query, AdditionalInfoType> {}

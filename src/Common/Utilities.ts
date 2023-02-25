@@ -1,3 +1,5 @@
+import type { FilterNode } from "../DataProcessing";
+
 export class Utilities {
   static isNull(object: any) {
     return object === null;
@@ -57,5 +59,20 @@ export class Utilities {
       const pair: [index: number, element: T] = [i, array[i]];
       yield pair;
     }
+  }
+
+  static wrap(filterNode: FilterNode<any>, expr: string) {
+    return filterNode.parenthesisDepth > 0
+      ? expr.surroundWith(
+          String.repeat(
+            String.Brackets.Opening.Round,
+            filterNode.parenthesisDepth
+          ),
+          String.repeat(
+            String.Brackets.Closing.Round,
+            filterNode.parenthesisDepth
+          )
+        )
+      : expr;
   }
 }
