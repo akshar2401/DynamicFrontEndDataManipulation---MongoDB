@@ -1,10 +1,10 @@
 import { FilterNodesVisitor } from "./FilterNodesVisitor";
 import * as parserGenerator from "peggy";
 
-export class LabelsFinderVisitor extends FilterNodesVisitor<parserGenerator.ast.Labeled> {
+export class RuleRefNodesFinderVisitor extends FilterNodesVisitor<parserGenerator.ast.RuleReference> {
   constructor() {
     super((node) => {
-      return node.type === "labeled";
+      return node.type === "rule_ref";
     });
   }
 }

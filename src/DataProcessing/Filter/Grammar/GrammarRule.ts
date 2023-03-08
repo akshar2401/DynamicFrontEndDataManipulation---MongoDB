@@ -7,7 +7,6 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
   private static _counter = 1;
   public readonly id: string;
   protected _rules: string[];
-  public readonly children: IGrammarRule<any, any>[] = [];
   constructor(
     public readonly label: string,
     rules: string[] = [],
@@ -39,11 +38,6 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
       "Rules of " + this.label
     );
     return this._rules[index];
-  }
-
-  public addChild(child: IGrammarRule<any, any>): void {
-    Errors.throwIfNullOrUndefined(child, `Child of ${this.label}`);
-    this.children.push(child);
   }
 
   shouldEmitAction(ruleIndex: number): boolean {

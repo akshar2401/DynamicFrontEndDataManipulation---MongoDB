@@ -3,7 +3,8 @@ import { IGrammarRule } from "../GrammarRule.types";
 export interface IGrammarBuilder {
   addRule(grammarRule: IGrammarRule): void;
   emitGrammar(): string;
-  startGrammarRule: IGrammarRule;
+  grammars: Generator<IGrammarRule, void, unknown>;
+  startGrammarRules: Generator<string, void, unknown>;
   getGrammarRulesByLabel<GrammarRuleType extends IGrammarRule = IGrammarRule>(
     label: string
   ): GrammarRuleType[];

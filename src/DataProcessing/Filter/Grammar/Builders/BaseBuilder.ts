@@ -1,33 +1,59 @@
-import { Errors, Utilities } from "../../../../Common";
-import { getLabelsFromRule } from "../Functionalities";
+import { Errors, Queue, Utilities } from "../../../../Common";
+import {
+  findAllRuleReferences,
+  findRuleReferences,
+  getLabelsFromRule,
+} from "../Functionalities";
 import { IGrammarRule } from "../GrammarRule.types";
 import { IGrammarBuilder } from "./Builder.types";
 
 export class BaseGrammarBuilder implements IGrammarBuilder {
   protected grammarRulesByLabel = new Map<string, IGrammarRule[]>();
   protected grammarRulesById = new Map<string, IGrammarRule>();
-  protected orderedGrammars: IGrammarRule[] = [];
   protected _startGrammarRule: IGrammarRule = undefined;
+  protected _startGrammarRulesCache = new Set<string>();
+  protected _orderedStartGrammarRules: string[] = [];
 
-  public get startGrammarRule() {
-    return this._startGrammarRule;
+  public get startGrammarRules() {
+    return this._startGrammarRules();
   }
 
-  public set startGrammarRule(rule: IGrammarRule) {
-    Errors.throwIfInvalid(
-      (grammarRule: IGrammarRule) =>
-        !this.grammarRulesById.has(grammarRule.id) ||
-        !this.grammarRulesByLabel.has(grammarRule.label) ||
-        !grammarRule.isStartRule,
-      rule,
-      "Start Grammar Rule with label " + rule.label + " and id" + rule.id
-    );
-    this._startGrammarRule = rule;
+  private *_startGrammarRules() {
+    for (const grammarRule of this._orderedStartGrammarRules) {
+      yield grammarRule;
+    }
+  }
+
+  public get grammars() {
+    return this._grammars();
+  }
+
+  private *_grammars() {
+    const grammarRulesQueue = new Queue<string>();
+    const visitedLabels = new Set<string>();
+    for (const startGrammarRule of this.startGrammarRules) {
+      grammarRulesQueue.enqueue(startGrammarRule);
+      visitedLabels.add(startGrammarRule);
+    }
+
+    while (!grammarRulesQueue.isEmpty) {
+      const currentGrammarLabel = grammarRulesQueue.dequeue();
+      const currentGrammarRules =
+        this.getGrammarRulesByLabel(currentGrammarLabel);
+      for (const currentGrammarRule of currentGrammarRules) {
+        yield currentGrammarRule;
+        for (const reference of findAllRuleReferences(currentGrammarRule)) {
+          if (!visitedLabels.has(reference)) {
+            visitedLabels.add(reference);
+            grammarRulesQueue.enqueue(reference);
+          }
+        }
+      }
+    }
   }
 
   addRule(grammarRule: IGrammarRule): void {
     if (!this.grammarRulesById.has(grammarRule.id)) {
-      this.orderedGrammars.push(grammarRule);
       let grammarRulesForCurrentLabel: IGrammarRule[] = [];
       const label = grammarRule.label;
       if (!this.grammarRulesByLabel.has(label)) {
@@ -37,8 +63,9 @@ export class BaseGrammarBuilder implements IGrammarBuilder {
       }
       grammarRulesForCurrentLabel.push(grammarRule);
       this.grammarRulesById.set(grammarRule.id, grammarRule);
-      if (grammarRule.isStartRule) {
-        this._startGrammarRule = grammarRule;
+      if (grammarRule.isStartRule && !this._startGrammarRulesCache.has(label)) {
+        this._orderedStartGrammarRules.push(label);
+        this._startGrammarRulesCache.add(label);
       }
     }
   }
@@ -53,7 +80,7 @@ export class BaseGrammarBuilder implements IGrammarBuilder {
     const emittedGrammar: string[] = [];
     let currentLabel: string;
     let emittedRulesForCurrentLabel = 0;
-    for (const grammarRule of this.orderedGrammars) {
+    for (const grammarRule of this.grammars) {
       if (!currentLabel || currentLabel !== grammarRule.label) {
         emittedRulesForCurrentLabel = 0;
         emittedGrammar.push(this.emitLabel(grammarRule.label, !currentLabel));

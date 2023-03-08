@@ -20,12 +20,12 @@ export class DefaultGrammarBuilder extends BaseGrammarBuilder {
   constructor() {
     super();
     super.addRules(
-      new StartGrammarRule(),
-      new LogicalOrGrammarRule(),
+      new NumberGrammarRule(),
       new LogicalAndGrammarRule(),
       new ConditionGrammarRule(),
       new DefaultComparisonOperatorGrammarRule(),
       new BooleanTermGrammarRule(),
+      new LogicalOrGrammarRule(),
       new TerminalGrammarRule(),
       new TerminalObjectLiteralGrammarRule(),
       new TerminalObjectGrammarRule(),
@@ -33,9 +33,9 @@ export class DefaultGrammarBuilder extends BaseGrammarBuilder {
       new TerminalListLiteralGrammarRule(),
       new TerminalListGrammarRule(),
       new BooleanGrammarRule(),
-      new NumberGrammarRule(),
       new StringGrammarRule(),
-      new IdentifierGrammarRule()
+      new IdentifierGrammarRule(),
+      new StartGrammarRule()
     );
   }
 }

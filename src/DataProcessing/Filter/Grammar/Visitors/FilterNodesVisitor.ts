@@ -1,12 +1,14 @@
 import * as parserGenerator from "peggy";
 import { BaseVisitor } from "./BaseVisitor";
 
-export class FilterNodesVisitor extends BaseVisitor<any[], void> {
+export class FilterNodesVisitor<
+  FilteredNodesType extends parserGenerator.ast.Node<any> = parserGenerator.ast.Node<any>
+> extends BaseVisitor<any[], void> {
   constructor(
     private readonly filterCallBack: (
       node: parserGenerator.ast.Node<string>
     ) => boolean,
-    public readonly matchedNodes: parserGenerator.ast.Node<any>[] = []
+    public readonly matchedNodes: FilteredNodesType[] = []
   ) {
     super();
   }
@@ -107,7 +109,7 @@ export class FilterNodesVisitor extends BaseVisitor<any[], void> {
 
   private handleNode(node: parserGenerator.ast.Node<any>) {
     if (this.filterCallBack(node)) {
-      this.matchedNodes.push(node);
+      this.matchedNodes.push(node as FilteredNodesType);
     }
   }
 }

@@ -93,8 +93,10 @@ export class PythonFilterQueryConverterVisitor<AdditionalInfoType = any>
     switch (filterNode.data.operator) {
       case BinaryLogicalOperators.AND:
         pythonEquivalentOperator = "and";
+        break;
       case BinaryLogicalOperators.OR:
         pythonEquivalentOperator = "or";
+        break;
     }
     return this.wrap(
       filterNode,
