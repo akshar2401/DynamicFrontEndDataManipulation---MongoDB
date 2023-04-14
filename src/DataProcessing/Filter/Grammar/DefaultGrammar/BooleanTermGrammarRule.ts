@@ -4,7 +4,7 @@ import {
   UnaryOperationNode,
 } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 
@@ -25,12 +25,12 @@ type BooleanTermGrammarRuleThirdRuleMatchArgs = [
   node: BinaryLogicalOperationNode,
   additionalArgs: HandleMatchAdditionalArgsType
 ];
-type BooleanTermGrammarRuleMatchArgs =
+export type BooleanTermGrammarRuleMatchArgs =
   | BooleanTermGrammarRuleFirstRuleMatchArgs
   | BooleanTermGrammarRuleSecondRuleMatchArgs
   | BooleanTermGrammarRuleThirdRuleMatchArgs;
 
-export class BooleanTermGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class BooleanTermGrammarRule extends GrammarRule<
   BooleanTermGrammarRuleMatchArgs,
   BooleanTermGrammarRuleMatchReturnType
 > {

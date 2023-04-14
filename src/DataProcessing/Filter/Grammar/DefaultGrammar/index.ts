@@ -15,4 +15,4 @@ export * from "./TerminalListGrammarRule";
 export * from "./TerminalListLiteralGrammarRule";
 export * from "./TerminalObjectGrammarRule";
 export * from "./TerminalObjectLiteralGrammarRule";
-export * from "./DefaultGrammarBuilder";
+export * from "../Builders/DefaultGrammarBuilder";

@@ -1,4 +1,4 @@
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { BooleanRuleMatchReturnType } from "./BooleanGrammarRule";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
@@ -16,7 +16,7 @@ export type TerminalRuleMatchReturnType =
   | StringRuleMatchReturnType
   | TerminalListLiteralRuleMatchReturnType;
 
-export class TerminalGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class TerminalGrammarRule extends GrammarRule<
   TerminalRuleMatchArgType,
   TerminalRuleMatchReturnType
 > {

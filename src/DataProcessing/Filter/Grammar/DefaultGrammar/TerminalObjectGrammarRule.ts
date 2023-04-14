@@ -1,7 +1,7 @@
 import { Utilities } from "../../../../Common";
 import { ObjectSeparatorNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { TerminalObjectKeyValuePairRuleMatchReturnType } from "./TerminalKeyValuePairGrammarRule";
@@ -26,7 +26,7 @@ export type TerminalObjectRuleMatchReturnType =
   | TerminalObjectKeyValuePairRuleMatchReturnType
   | ObjectSeparatorNode;
 
-export class TerminalObjectGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class TerminalObjectGrammarRule extends GrammarRule<
   TerminalObjectRuleMatchArgs,
   TerminalObjectRuleMatchReturnType
 > {

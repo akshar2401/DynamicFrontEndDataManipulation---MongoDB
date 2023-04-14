@@ -1,14 +1,14 @@
 import { BooleanLiteralNode } from "../../FilterNode";
 import { TokenType } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 
 export type BooleanRuleMatchArgs = [TokenType, HandleMatchAdditionalArgsType];
 export type BooleanRuleMatchReturnType = BooleanLiteralNode;
 
-export class BooleanGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class BooleanGrammarRule extends GrammarRule<
   BooleanRuleMatchArgs,
   BooleanRuleMatchReturnType
 > {

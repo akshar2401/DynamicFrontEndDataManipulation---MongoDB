@@ -1,7 +1,7 @@
 import { Utilities } from "../../../../Common";
 import { BinaryLogicalOperationNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { ConditionRuleMatchReturnType } from "./ConditionGrammarRule";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
@@ -16,7 +16,7 @@ type LogicalAndActionSecondRuleParamTypes = [
   ConditionRuleMatchReturnType,
   HandleMatchAdditionalArgsType
 ];
-type LogicalAndActionParamTypes =
+export type LogicalAndActionParamTypes =
   | LogicalAndActionFirstRuleParamTypes
   | LogicalAndActionSecondRuleParamTypes;
 
@@ -24,7 +24,7 @@ export type LogicalAndRuleMatchReturnType =
   | BinaryLogicalOperationNode
   | ConditionRuleMatchReturnType;
 
-export class LogicalAndGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class LogicalAndGrammarRule extends GrammarRule<
   LogicalAndActionParamTypes,
   LogicalAndRuleMatchReturnType
 > {

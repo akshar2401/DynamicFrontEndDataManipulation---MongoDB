@@ -1,7 +1,7 @@
 import { IdentifierNode } from "../../FilterNode";
 import { TokenType } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 
@@ -11,7 +11,7 @@ export type IdentifierRuleMatchArgs = [
 ];
 export type IdentifierRuleMatchReturnType = IdentifierNode;
 
-export class IdentifierGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class IdentifierGrammarRule extends GrammarRule<
   IdentifierRuleMatchArgs,
   IdentifierRuleMatchReturnType
 > {

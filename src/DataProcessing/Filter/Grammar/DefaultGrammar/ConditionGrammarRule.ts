@@ -1,7 +1,7 @@
 import { Utilities } from "../../../../Common";
 import { ConditionNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { BooleanTermGrammarRuleMatchReturnType } from "./BooleanTermGrammarRule";
 import { ComparisonOperatorRuleMatchReturnType } from "./ComparisonOperatorGrammarRule";
@@ -17,7 +17,7 @@ type ConditionActionSecondRuleParamTypes = [
   BooleanTermGrammarRuleMatchReturnType,
   HandleMatchAdditionalArgsType
 ];
-type ConditionActionParamTypes =
+export type ConditionActionParamTypes =
   | ConditionActionFirstRuleParamTypes
   | ConditionActionSecondRuleParamTypes;
 
@@ -25,7 +25,7 @@ export type ConditionRuleMatchReturnType =
   | ConditionNode
   | BooleanTermGrammarRuleMatchReturnType;
 
-export class ConditionGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class ConditionGrammarRule extends GrammarRule<
   ConditionActionParamTypes,
   ConditionRuleMatchReturnType
 > {

@@ -460,7 +460,7 @@ export class NotLogicalOperationNode extends UnaryOperationNode {
   public type = FilterNodeType.NotLogicalOperation;
 
   constructor(rawOperatorToken: string, lhs?: FilterNode<any>) {
-    super(UnaryLogicalOperators.NOT, rawOperatorToken, lhs);
+    super(UnaryLogicalOperators.NOT, rawOperatorToken, lhs)
   }
   public accept(visitor: IFilterNodeVisitor<any>, additionalInfo?: any) {
     return visitor.visitNotOperationNode(this, additionalInfo);

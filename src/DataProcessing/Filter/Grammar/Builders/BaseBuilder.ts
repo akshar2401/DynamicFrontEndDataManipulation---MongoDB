@@ -1,9 +1,7 @@
 import { Errors, Queue, Utilities } from "../../../../Common";
-import {
-  findAllRuleReferences,
-  findRuleReferences,
-  getLabelsFromRule,
-} from "../Functionalities";
+import { BaseEmitter } from "../Emitters/BaseEmitter";
+import { IGrammarEmitter } from "../Emitters/Emitter.types";
+import { findAllRuleReferences } from "../Functionalities";
 import { IGrammarRule } from "../GrammarRule.types";
 import { IGrammarBuilder } from "./Builder.types";
 
@@ -14,6 +12,9 @@ export class BaseGrammarBuilder implements IGrammarBuilder {
   protected _startGrammarRulesCache = new Set<string>();
   protected _orderedStartGrammarRules: string[] = [];
 
+  constructor(protected readonly grammarEmitter?: IGrammarEmitter) {
+    this.grammarEmitter ??= new BaseEmitter();
+  }
   public get startGrammarRules() {
     return this._startGrammarRules();
   }
@@ -77,72 +78,7 @@ export class BaseGrammarBuilder implements IGrammarBuilder {
   }
 
   emitGrammar(): string {
-    const emittedGrammar: string[] = [];
-    let currentLabel: string;
-    let emittedRulesForCurrentLabel = 0;
-    for (const grammarRule of this.grammars) {
-      if (!currentLabel || currentLabel !== grammarRule.label) {
-        emittedRulesForCurrentLabel = 0;
-        emittedGrammar.push(this.emitLabel(grammarRule.label, !currentLabel));
-        currentLabel = grammarRule.label;
-      }
-      for (
-        let ruleIndex = 0;
-        ruleIndex < grammarRule.numberOfRules;
-        ruleIndex++
-      ) {
-        emittedGrammar.push(
-          this.emitRule(
-            ruleIndex,
-            grammarRule,
-            emittedRulesForCurrentLabel === 0
-          )
-        );
-        emittedRulesForCurrentLabel++;
-      }
-    }
-    return emittedGrammar.join(String.Empty);
-  }
-
-  private emitLabel(label: string, firstLabel = false) {
-    return String.join(firstLabel ? "" : "\n", label);
-  }
-  private emitRule(
-    ruleIndex: number,
-    grammarRule: IGrammarRule,
-    firstRule = false
-  ) {
-    const emittedRule = [];
-    const rule = grammarRule.ruleAt(ruleIndex);
-    emittedRule.push(firstRule ? "\n\t= " : "\n\t/ ");
-    if (grammarRule.shouldEmitAction(ruleIndex)) {
-      const labels = getLabelsFromRule(grammarRule.label, rule);
-      if (labels.length === 0) {
-        emittedRule.push(grammarRule.label);
-        emittedRule.push(String.Punctuations.Colon);
-        emittedRule.push(String.Brackets.Opening.Round);
-        emittedRule.push(rule);
-        emittedRule.push(String.Brackets.Closing.Round);
-        labels.push(grammarRule.label);
-      } else {
-        emittedRule.push(rule);
-      }
-      emittedRule.push(String.Space);
-      emittedRule.push(String.Brackets.Opening.Curly);
-      emittedRule.push(String.Space);
-      emittedRule.push(
-        `return options.handleMatch("${
-          grammarRule.id
-        }", ${ruleIndex}, [${labels.join(
-          String.Punctuations.Comma + String.Space
-        )}, {span: range()}])`
-      );
-      emittedRule.push(String.Space);
-      emittedRule.push(String.Brackets.Closing.Curly);
-    } else {
-      emittedRule.push(rule);
-    }
-    return emittedRule.join(String.Empty);
+    return this.grammarEmitter.emitGrammar(this.grammars);
   }
 
   getGrammarRulesByLabel<
@@ -161,7 +97,7 @@ export class BaseGrammarBuilder implements IGrammarBuilder {
     }
 
     const grammarRules = this.grammarRulesByLabel.get(label);
-    if (Utilities.isValidIndex(0, grammarRules.length)) {
+    if (!Utilities.isValidIndex(0, grammarRules.length)) {
       return;
     }
 
@@ -176,5 +112,9 @@ export class BaseGrammarBuilder implements IGrammarBuilder {
       id + " grammar rule id"
     );
     return this.grammarRulesById.get(id) as GrammarRuleType;
+  }
+
+  As<GrammarBuilderType extends IGrammarBuilder>() {
+    return this as unknown as GrammarBuilderType;
   }
 }

@@ -1,9 +1,9 @@
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { LogicalOrRuleMatchReturnType } from "./LogicalOrGrammarRule";
 
-export class StartGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class StartGrammarRule extends GrammarRule<
   [LogicalOrRuleMatchReturnType, HandleMatchAdditionalArgsType],
   LogicalOrRuleMatchReturnType
 > {

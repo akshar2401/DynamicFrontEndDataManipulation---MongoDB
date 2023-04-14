@@ -5,5 +5,9 @@ export interface IFilterQueryParserOptions {
 }
 
 export interface IFilterQueryParser {
-  parse(filterQuery: string, options?: object): FilterNode<any>;
+  parse(
+    filterQuery: string,
+    regenerateParser?: boolean,
+    options?: object
+  ): FilterNode<any>;
 }

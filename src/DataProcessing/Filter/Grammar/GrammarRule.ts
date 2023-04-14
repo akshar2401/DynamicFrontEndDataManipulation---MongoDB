@@ -51,14 +51,7 @@ export abstract class GrammarRule<MatchArgTypes, ReturnType>
     return true;
   }
 
-  abstract handleMatch(ruleIndex: number, args: MatchArgTypes): ReturnType;
-}
-
-export abstract class GrammarRuleWithMultipleChildRules<
-  MatchArgTypes extends Array<unknown>,
-  ReturnType
-> extends GrammarRule<MatchArgTypes, ReturnType> {
-  handleMatch(ruleIndex: number, args: MatchArgTypes): ReturnType {
+  public handleMatch(ruleIndex: number, args: MatchArgTypes): ReturnType {
     Errors.throwIfOutOfBounds(
       ruleIndex,
       0,
@@ -68,7 +61,6 @@ export abstract class GrammarRuleWithMultipleChildRules<
     Errors.throwIfNotArray(args, "Arguments to handleMatch for " + this.label);
     return this.handleMatchInternal(ruleIndex, args);
   }
-
   protected abstract handleMatchInternal(
     ruleIndex: number,
     args: MatchArgTypes

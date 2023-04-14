@@ -1,7 +1,7 @@
 import { Utilities } from "../../../../Common";
 import { ListNode } from "../../FilterNode";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 import { TerminalListRuleMatchReturnType } from "./TerminalListGrammarRule";
@@ -22,7 +22,7 @@ export type TerminalListLiteralRuleMatchArgs =
 
 export type TerminalListLiteralRuleMatchReturnType = ListNode;
 
-export class TerminalListLiteralGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class TerminalListLiteralGrammarRule extends GrammarRule<
   TerminalListLiteralRuleMatchArgs,
   TerminalListLiteralRuleMatchReturnType
 > {

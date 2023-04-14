@@ -2,7 +2,7 @@
   "name": "frontendtabulardatamanipulator",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
     "invoke": "node lib/index.js"

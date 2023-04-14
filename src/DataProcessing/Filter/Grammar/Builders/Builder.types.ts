@@ -14,4 +14,5 @@ export interface IGrammarBuilder {
   getGrammarRuleById<GrammarRuleType extends IGrammarRule = IGrammarRule>(
     id: string
   ): GrammarRuleType;
+  As<GrammarBuilderType extends IGrammarBuilder>(): GrammarBuilderType;
 }

@@ -1,14 +1,12 @@
-import { Errors } from "../../Common/";
-
 export interface IComparisonOperator
-  extends IVisitorComptabileComparisonOperator<any> {
-  operator: string;
+  extends IVisitorCompatibleComparisonOperator<any> {
+  readonly operator: string;
   get precedence(): number;
-  evaluate(...args: any[]): any;
+  readonly key: string;
 }
 
 export abstract class BaseComparisonOperator implements IComparisonOperator {
-  public operator: string;
+  public readonly operator: string;
   constructor(operator: string) {
     this.operator = operator;
   }
@@ -18,30 +16,22 @@ export abstract class BaseComparisonOperator implements IComparisonOperator {
     return -this.operator.length;
   }
 
-  public abstract evaluate(...args: any[]);
-
   public abstract accept(visitor: IFilterComparisonOperatorVisitor<any>);
+
+  public get key() {
+    return this.operator;
+  }
 }
 
 export abstract class BinaryOperator extends BaseComparisonOperator {
   constructor(operator: string) {
     super(operator);
   }
-
-  public evaluate(...args: any[]) {
-    Errors.throwIfNotAtLeastSize(args, 2);
-    return this._evaluate(args[0], args[1]);
-  }
-
-  protected abstract _evaluate(a: any, b: any): any;
 }
 
 export class GreaterThanEqualTo extends BinaryOperator {
   constructor() {
     super(">=");
-  }
-  protected _evaluate(a, b) {
-    return a >= b;
   }
 
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
@@ -54,10 +44,6 @@ export class LessThanEqualTo extends BinaryOperator {
     super("<=");
   }
 
-  protected _evaluate(a: any, b: any) {
-    return a <= b;
-  }
-
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
     return visitor.visitLessThanEqualTo(this);
   }
@@ -68,9 +54,6 @@ export class EqualTo extends BinaryOperator {
     super("==");
   }
 
-  protected _evaluate(a: any, b: any) {
-    return a == b;
-  }
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
     return visitor.visitEqualTo(this);
   }
@@ -79,10 +62,6 @@ export class EqualTo extends BinaryOperator {
 export class StrictEqualTo extends BinaryOperator {
   constructor() {
     super("===");
-  }
-
-  protected _evaluate(a: any, b: any) {
-    return a === b;
   }
 
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
@@ -95,10 +74,6 @@ export class StrictNotEqualTo extends BinaryOperator {
     super("!==");
   }
 
-  protected _evaluate(a: any, b: any) {
-    return a !== b;
-  }
-
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
     return visitor.visitStrictNotEqualTo(this);
   }
@@ -107,10 +82,6 @@ export class StrictNotEqualTo extends BinaryOperator {
 export class NotEqualTo extends BinaryOperator {
   constructor() {
     super("!=");
-  }
-
-  protected _evaluate(a: any, b: any) {
-    return a != b;
   }
 
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
@@ -123,10 +94,6 @@ export class LessThan extends BinaryOperator {
     super("<");
   }
 
-  protected _evaluate(a: any, b: any) {
-    return a < b;
-  }
-
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
     return visitor.visitLessThan(this);
   }
@@ -135,10 +102,6 @@ export class LessThan extends BinaryOperator {
 export class GreaterThan extends BinaryOperator {
   constructor() {
     super(">");
-  }
-
-  protected _evaluate(a: any, b: any) {
-    return a > b;
   }
 
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
@@ -151,16 +114,12 @@ export class In extends BinaryOperator {
     super("in");
   }
 
-  protected _evaluate(a: any, b: any) {
-    return a in b;
-  }
-
   public accept(visitor: IFilterComparisonOperatorVisitor<any>) {
     return visitor.visitIn(this);
   }
 }
 
-export function getInBuiltComparisonOperators() {
+export function getBuiltInComparisonOperators() {
   return [
     new GreaterThanEqualTo(),
     new GreaterThan(),
@@ -187,6 +146,6 @@ export interface IFilterComparisonOperatorVisitor<ReturnType> {
   visitIn(operator: In): ReturnType;
 }
 
-export interface IVisitorComptabileComparisonOperator<ReturnType> {
+export interface IVisitorCompatibleComparisonOperator<ReturnType> {
   accept(visitor: IFilterComparisonOperatorVisitor<ReturnType>): ReturnType;
 }

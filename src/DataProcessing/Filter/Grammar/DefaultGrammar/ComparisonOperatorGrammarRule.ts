@@ -1,37 +1,25 @@
-import { Errors } from "../../../../Common";
+import { Errors, Utilities } from "../../../../Common";
 import {
-  getInBuiltComparisonOperators,
+  getBuiltInComparisonOperators,
   IComparisonOperator,
 } from "../../FilterComparisonOperators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
-import SortedSet = require("collections/sorted-set");
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 
 export type ComparisonOperatorRuleMatchReturnType = IComparisonOperator;
-type ComparisonOperatorRuleArgs = [string, HandleMatchAdditionalArgsType];
+export type ComparisonOperatorRuleArgs = [
+  string,
+  HandleMatchAdditionalArgsType
+];
 
-export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class ComparisonOperatorGrammarRule extends GrammarRule<
   ComparisonOperatorRuleArgs,
   ComparisonOperatorRuleMatchReturnType
 > {
   private readonly _operators = new Map<string, IComparisonOperator>();
-  private readonly _sortedRules = new SortedSet<string>(
-    [],
-    (operatorName1, operatorName2) => {
-      return operatorName1 === operatorName2;
-    },
-    (operatorName1, operatorName2) => {
-      const operator1 = this._operators.get(operatorName1);
-      const operator2 = this._operators.get(operatorName2);
-      let compareValue = operator1.precedence - operator2.precedence;
-      if (compareValue === 0) {
-        compareValue = operatorName1 > operatorName2 ? -1 : 1;
-      }
-      return compareValue;
-    }
-  );
-  private _convertSortedRules = true;
+  private _orderedOperators: string[] = undefined;
+
   constructor() {
     super(DefaultGrammarRuleLabel.ComparisonOperatorRule);
   }
@@ -43,17 +31,16 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
   }
 
   public override get rules(): string[] {
-    if (this._convertSortedRules) {
-      this._rules = this._sortedRules.map((rule: string) =>
-        rule.surroundWithQuotes()
-      );
-      this._convertSortedRules = false;
+    if (Utilities.isNullOrUndefined(this._orderedOperators)) {
+      this._orderedOperators = Array.from(this._operators.values())
+        .sort((op1, op2) => op1.precedence - op2.precedence)
+        .map((operator) => operator.operator.surroundWithQuotes());
     }
-    return this._rules;
+    return this._orderedOperators;
   }
 
   public override get numberOfRules() {
-    return this._sortedRules.length;
+    return this._operators.size;
   }
 
   public override ruleAt(index: number): string {
@@ -69,13 +56,22 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
   public addOperator(operator: IComparisonOperator) {
     Errors.throwIfNullOrUndefined(operator, "Operator");
     Errors.throwIfEmptyOrNullOrUndefined(operator.operator, "Operator Name");
-    if (this._operators.has(operator.operator)) {
+    if (this._operators.has(operator.key)) {
+      return;
+    }
+    this._orderedOperators = undefined;
+    this._operators.set(operator.key, operator);
+    return this;
+  }
+
+  public removeOperator(operator: IComparisonOperator) {
+    if (Utilities.isNullOrUndefined(operator)) {
       return;
     }
 
-    this._operators.set(operator.operator, operator);
-    this._sortedRules.add(operator.operator);
-    this._convertSortedRules = true;
+    this._orderedOperators = undefined;
+    this._operators.delete(operator.key);
+    return this;
   }
 
   public get operators() {
@@ -105,7 +101,7 @@ export class ComparisonOperatorGrammarRule extends GrammarRuleWithMultipleChildR
 export class DefaultComparisonOperatorGrammarRule extends ComparisonOperatorGrammarRule {
   constructor() {
     super();
-    for (const operator of getInBuiltComparisonOperators()) {
+    for (const operator of getBuiltInComparisonOperators()) {
       super.addOperator(operator);
     }
   }

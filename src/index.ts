@@ -1,37 +1,55 @@
 import { PrintFilterTreeVisitor } from "./DataProcessing/Filter/Visitors";
-import GeneralFilterSplitter from "./DataProcessing/Filter/GeneralFilterSplitter";
 import { setUpStringType } from "./Common";
-import {
-  BaseFilterQueryParser,
-  ConditionNode,
-  FilterNode,
-  IdentifierNode,
-  KeyValuePairNode,
-  ObjectNode,
-  ObjectSeparatorNode,
-} from "./DataProcessing";
-import { DefaultComparisonOperatorGrammarRule } from "./DataProcessing/Filter/Grammar/DefaultGrammar/ComparisonOperatorGrammarRule";
+import { BaseFilterQueryParser } from "./DataProcessing";
+import { PythonFilterQueryConverter } from "./QueryConverters";
 import {
   BaseComparisonOperator,
+  BaseGrammarBuilder,
+  ComparisonOperatorGrammarRule,
+  DefaultGrammarBuilder,
+  DefaultGrammarRuleLabel,
   IFilterComparisonOperatorVisitor,
-} from "./DataProcessing/Filter/FilterComparisonOperators";
-import * as parserGenerator from "peggy";
-
-import { IdentifierGrammarRule } from "./DataProcessing/Filter/Grammar/DefaultGrammar/IdentifierGrammarRule";
-import { NumberGrammarRule } from "./DataProcessing/Filter/Grammar/DefaultGrammar/NumberGrammarRule";
-import { IGrammarRule } from "./DataProcessing/Filter/Grammar/GrammarRule.types";
-import { DefaultGrammarBuilder } from "./DataProcessing/Filter/Grammar";
-import { IQueryConverter, PythonFilterQueryConverter } from "./QueryConverters";
-import { IFilterQueryConverter } from "./QueryConverters/FilterQueryConverter";
-const deque = require("collections/deque");
+  In,
+} from "./DataProcessing/Filter";
 
 setUpStringType();
 // const builder = new DefaultGrammarBuilder();
 // console.log(builder.emitGrammar());
 
+interface IExtendedComparisonOperatorVisitor<ReturnType = any>
+  extends IFilterComparisonOperatorVisitor<ReturnType> {
+  visitOf(ofOperator: OfOperator): ReturnType;
+  visitExactIn(exactIn: ExactIn): ReturnType;
+}
+
+class OfOperator extends BaseComparisonOperator {
+  constructor() {
+    super("of");
+  }
+  public accept(visitor: IExtendedComparisonOperatorVisitor) {
+    return visitor.visitOf(this);
+  }
+}
+
+class ExactIn extends BaseComparisonOperator {
+  constructor() {
+    super("exactin");
+  }
+
+  public accept(visitor: IExtendedComparisonOperatorVisitor) {
+    return visitor.visitExactIn(this);
+  }
+}
+
 const printVisitor = new PrintFilterTreeVisitor({ printOutput: true });
 const expr =
-  '(((x)) !== "ss" && (1 > 2 || true && false || u in {u:1, "asssss": c, "list": [1,2,3,{}]}))';
+  '(((x)) !== "ss" && (1 > 2 || true && false || u exactin {u:1, "asssss": c, "list": [1,2,3,{}]}))';
 const parser = new BaseFilterQueryParser();
+parser.grammarBuilder
+  .As<DefaultGrammarBuilder>()
+  .comparisonGrammarRule.addOperator(new OfOperator())
+  .addOperator(new ExactIn());
 const tree = parser.parse(expr);
+console.log(tree);
 printVisitor.visit(tree);
+console.log(parser.grammarBuilder.emitGrammar());

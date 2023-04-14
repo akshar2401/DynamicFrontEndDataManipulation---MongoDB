@@ -16,9 +16,10 @@ export class BaseFilterQueryParser implements IFilterQueryParser {
 
   parse(
     filterQuery: string,
+    regenerateParser = false,
     options?: IFilterQueryParserOptions
   ): FilterNode<any> {
-    if (Utilities.isNullOrUndefined(this._parser)) {
+    if (Utilities.isNullOrUndefined(this._parser) || regenerateParser) {
       const grammar = this.grammarBuilder.emitGrammar();
       this._parser = parserGenerator.generate(grammar, {
         cache: true,

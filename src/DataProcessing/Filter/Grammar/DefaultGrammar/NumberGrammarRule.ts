@@ -1,14 +1,14 @@
 import { FilterNode } from "../../FilterNode";
 import { TokenType } from "../../NodeCreator.types";
 import { NodeCreators } from "../../NodeCreators";
-import { GrammarRuleWithMultipleChildRules } from "../GrammarRule";
+import { GrammarRule } from "../GrammarRule";
 import { HandleMatchAdditionalArgsType } from "../GrammarRule.types";
 import { DefaultGrammarRuleLabel } from "./DefaultGrammarLabels";
 
 export type NumberRuleMatchArgs = [TokenType, HandleMatchAdditionalArgsType];
 export type NumberRuleMatchReturnType = FilterNode<number>;
 
-export class NumberGrammarRule extends GrammarRuleWithMultipleChildRules<
+export class NumberGrammarRule extends GrammarRule<
   NumberRuleMatchArgs,
   NumberRuleMatchReturnType
 > {
